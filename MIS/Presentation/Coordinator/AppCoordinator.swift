@@ -26,8 +26,8 @@ final class AppCoordinator: ObservableObject {
         switch route {
         case .itemList:
             MediaItemListView(viewModel: self.container.makeMediaItemViewModel())
-        case .itemDetail(let formData):
-            MediaItemDetailView(formData: formData)
+        case .itemDetail:
+            EmptyView()
         }
     }
     
