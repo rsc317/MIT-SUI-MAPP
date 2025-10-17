@@ -1,0 +1,141 @@
+// macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Xcode
+## Build generated
+build/
+Build/
+DerivedData/
+
+## User settings
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+
+## Other
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# Swift Package Manager
+.swiftpm/
+.build/
+Package.resolved
+
+# CocoaPods
+Pods/
+# If you prefer to commit Pods, comment the line above and ignore only artifacts
+*.podspec.json
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+Carthage/DerivedData/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/readme.md
+
+# Code coverage
+*.xccovreport
+*.xccovarchive
+*.profdata
+
+# SwiftLint
+.swiftlint_cache
+
+# SwiftFormat
+.swiftformat
+
+# Firebase / Crashlytics
+GoogleService-Info.plist
+firebase_app_id_file.json
+Crashlytics.framework
+fabric.framework
+.crashlytics*
+
+# Tuist
+Tuist/Dependencies/
+
+# SPM Artifacts
+Artifacts/
+
+# Archives
+*.xcarchive
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Simulator logs and device data (do not ignore if you need to keep these)
+CoreSimulator/
+
+# Temporary files
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# Editor directories and files
+.vscode/
+.idea/
+*.iml
+
+# SwiftData / SQLite (if generated at runtime)
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Localization intermediate
+*.stringsdict
+*.strings~
+
+# SwiftGen (generated; ignore if you regenerate on build)
+Generated/
+
+# Xcode Cache
+SourcePackages/checkouts/*/.build/
+SourcePackages/artifacts/
+
+# Package.resolved (optionally commit for reproducible builds)
+# Uncomment the next line if you prefer to track it
+# !Package.resolved
+
