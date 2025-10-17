@@ -1,0 +1,25 @@
+/* 
+  Localizable.strings
+  MIS
+
+  Created by Emircan Duman on 16.10.25.
+  
+*/
+
+//MARK: Global
+"BUTTON_SAVE" = "Save";
+"BUTTON_CANCEL" = "Cancel";
+"BUTTON_ADD" = "Add";
+"BUTTON_DELETE" = "Delete";
+
+//MARK: Repository Errors
+"REPOSITORY_FAILURE_ERROR_KEY" = "An error occurred while accessing the repository. Please try again later.";
+"STUDENT_NOT_FOUND_ERROR_KEY" = "The specified student could not be found.";
+"UNKNOWN_ERROR_KEY" = "An unknown error occurred. Please try again.";
+
+//MARK: MediaItem
+"NAV_TITLE" = "Media";
+"ADD_NAV_TITLE" = "Add";
+"SECTION_PERSONAL_INFORMATION" = "Informations";
+"TITLE" = "Titel";
+"DESC" = "Description";
