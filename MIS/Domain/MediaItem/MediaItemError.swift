@@ -8,18 +8,20 @@
 import SwiftUI
 
 enum MediaItemError: Error, Identifiable, Equatable {
-    var id: String { localizedDescription }
-
     case repositoryFailure(String)
     case itemNotFound
     case unknown
+
+    // MARK: - Internal
+
+    var id: String { localizedDescription }
 
     var localizedDescription: LocalizedStringKey {
         switch self {
         case .repositoryFailure:
             MediaItemLK.REPOSITORY_FAILURE_ERROR_KEY.localized
         case .itemNotFound:
-            MediaItemLK.STUDENT_NOT_FOUND_ERROR_KEY.localized
+            MediaItemLK.ITEM_NOT_FOUND.localized
         case .unknown:
             MediaItemLK.UNKNOWN_ERROR_KEY.localized
         }

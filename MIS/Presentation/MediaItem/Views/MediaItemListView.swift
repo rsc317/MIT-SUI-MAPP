@@ -8,13 +8,15 @@
 import SwiftUI
 
 struct MediaItemListView: View {
+    // MARK: - Internal
+
     @EnvironmentObject var coordinator: AppCoordinator
     @StateObject var viewModel: MediaItemViewModel
-    
+
     var body: some View {
         List {
             ForEach(viewModel.items, id: \.id) { item in
-                studentCard(item)
+                itemRow(item)
                     .onTapGesture {
                         coordinator.push(route: .itemDetail)
                     }
@@ -36,16 +38,18 @@ struct MediaItemListView: View {
         }
         .task { viewModel.loadItems() }
     }
-    
+
+    // MARK: - Private
+
     @ViewBuilder
-    private func studentCard(_ item: MediaItem) -> some View {
+    private func itemRow(_ item: MediaItemDataForm) -> some View {
         ZStack {
             Color.card
             HStack(alignment: .center) {
                 Text(item.title)
                     .font(.headline)
                     .foregroundStyle(.text)
-                Text(item.type.rawValue)
+                Text(item.formattedDate)
                     .font(.subheadline)
                     .foregroundStyle(.text)
             }

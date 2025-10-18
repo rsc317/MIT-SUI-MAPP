@@ -5,7 +5,6 @@
 //  Created by Emircan Duman on 16.10.25.
 //
 
-
 import SwiftUI
 
 struct NavigationBarTitleColorModifier: ViewModifier {

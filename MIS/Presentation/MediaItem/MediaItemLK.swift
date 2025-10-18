@@ -13,8 +13,11 @@ enum MediaItemLK: String, LocalizationKeyProtocol {
     case SECTION_PERSONAL_INFORMATION
     case TITLE
     case DESC
-    
+
+    case TYPE_DISPLAY_NAME_VIDEO
+    case TYPE_DISPLAY_NAME_PICTURE
+
     case REPOSITORY_FAILURE_ERROR_KEY
-    case STUDENT_NOT_FOUND_ERROR_KEY
+    case ITEM_NOT_FOUND
     case UNKNOWN_ERROR_KEY
 }

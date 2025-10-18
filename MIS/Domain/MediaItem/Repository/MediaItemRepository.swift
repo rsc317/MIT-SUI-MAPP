@@ -5,14 +5,18 @@
 //  Created by Emircan Duman on 17.10.25.
 //
 
+import Foundation
 import SwiftData
 
 final class MediaItemRepository: MediaItemRepositoryProtocol {
-    private let baseRepository: Repository<MediaItem>
+    // MARK: - Lifecycle
 
     init(persistence: PersistenceController) {
-        self.baseRepository = Repository(persistence)
+        context = persistence.makeBackgroundContext()
+        baseRepository = Repository(persistence)
     }
+
+    // MARK: - Internal
 
     func fetchAll() async throws -> [MediaItem] {
         try await baseRepository.fetchAll()
@@ -26,7 +30,23 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         try await baseRepository.delete(model)
     }
 
+    func delete(byUUID uuid: UUID) async throws {
+        let descriptor = FetchDescriptor<MediaItem>(
+            predicate: #Predicate { $0.uuid == uuid }
+        )
+
+        if let item = try context.fetch(descriptor).first {
+            context.delete(item)
+            try context.save()
+        }
+    }
+
     func fetch(byId id: PersistentIdentifier) async throws -> MediaItem? {
         try await baseRepository.fetch(byId: id)
     }
+
+    // MARK: - Private
+
+    private let baseRepository: Repository<MediaItem>
+    private let context: ModelContext
 }

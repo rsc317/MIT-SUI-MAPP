@@ -7,14 +7,15 @@
 
 import Foundation
 
-
 enum Sheet: Identifiable {
     case addNewItem(MediaItemViewModel)
+
+    // MARK: - Internal
 
     var id: String {
         switch self {
         case .addNewItem:
-            return "addNewItem"
+            "addNewItem"
         }
     }
 }

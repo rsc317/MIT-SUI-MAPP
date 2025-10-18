@@ -9,7 +9,8 @@ import SwiftUI
 
 struct MediaItemDetailView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    let formData: MediaItemFormData
+
+    let formData: MediaItemDataForm
 
     var body: some View {
         ScrollView {
@@ -18,7 +19,7 @@ struct MediaItemDetailView: View {
                     .fill(Color.background.opacity(0.15))
                     .frame(width: 120, height: 120)
                     .overlay {
-                        Image(systemName: formData.type == .picture ? "photo" : "video")
+                        Image(systemName: formData.typeDisplayName)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 60, height: 60)
@@ -37,7 +38,7 @@ struct MediaItemDetailView: View {
                 Text(formData.createDate, format: .dateTime)
                     .foregroundStyle(.text)
 
-                if let desc = formData.description, !desc.isEmpty {
+                if let desc = formData.desc, !desc.isEmpty {
                     Text(desc)
                         .foregroundStyle(.text)
                         .multilineTextAlignment(.leading)

@@ -19,7 +19,7 @@
 
 //MARK: MediaItem
 "NAV_TITLE" = "Medien";
-"ADD_NAV_TITLE" = "Hinzufügen";
+"ADD_NAV_TITLE" = "Neues Item";
 "SECTION_PERSONAL_INFORMATION" = "Informationen";
 "TITLE" = "Titel";
 "DESC" = "Beschreibung";

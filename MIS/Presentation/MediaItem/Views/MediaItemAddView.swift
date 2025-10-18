@@ -4,22 +4,17 @@
 //
 //  Created by Emircan Duman on 16.10.25.
 
-
-import SwiftUI
 import SwiftUI
 
 struct MediaItemAddView: View {
-    @EnvironmentObject var coordinator: AppCoordinator
-    @StateObject var viewModel: MediaItemViewModel
-
-    @State private var title = ""
-    @State private var desc = ""
+    // MARK: - Internal
 
     enum Field: Hashable {
         case title, desc
     }
 
-    @FocusState private var focusedField: Field?
+    @EnvironmentObject var coordinator: AppCoordinator
+    @StateObject var viewModel: MediaItemViewModel
 
     var body: some View {
         NavigationStack {
@@ -52,31 +47,42 @@ struct MediaItemAddView: View {
             .modifier(NavigationBarTitleColorModifier(color: .accent))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized) {
-                        coordinator.dismissSheet()
-                    }
-                    .accessibilityIdentifier(MediaItemAID.BUTTON_CANCEL.rawValue)
+                    UIComponentFactory.createToolbarButton(
+                        label: GlobalLocalizationKeys.BUTTON_CANCEL,
+                        action: { coordinator.dismissSheet() },
+                        accessibilityId: MediaItemAID.BUTTON_CANCEL
+                    )
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(GlobalLocalizationKeys.BUTTON_SAVE.localized) {
-                        Task {
-                            let formData = MediaItemFormData(
-                                title: title,
-                                description: desc,
-                                src: URL(fileURLWithPath: "/tmp/sample.png"),
-                                createDate: Date(),
-                                type: .picture
-                            )
-                            await viewModel.addItem(from: formData)
-                            coordinator.dismissSheet()
-                        }
-                    }
-                    .accessibilityIdentifier(MediaItemAID.BUTTON_SAVE.rawValue)
+                    UIComponentFactory.createToolbarButton(
+                        label: GlobalLocalizationKeys.BUTTON_SAVE,
+                        action: {
+                            Task {
+                                let formData = MediaItemDataForm(
+                                    title: title,
+                                    desc: desc,
+                                    src: URL(fileURLWithPath: "/tmp/sample.png"),
+                                    createDate: Date(),
+                                    type: .picture
+                                )
+                                await viewModel.addItem(from: formData)
+                                coordinator.dismissSheet()
+                            }
+                        },
+                        accessibilityId: MediaItemAID.BUTTON_SAVE
+                    )
                 }
             }
             .tint(.accentColor)
             .onAppear { focusedField = .title }
         }
     }
+
+    // MARK: - Private
+
+    @State private var title = ""
+    @State private var desc = ""
+
+    @FocusState private var focusedField: Field?
 }

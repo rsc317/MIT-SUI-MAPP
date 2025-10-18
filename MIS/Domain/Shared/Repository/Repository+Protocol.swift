@@ -8,7 +8,6 @@
 import Foundation
 import SwiftData
 
-
 protocol RepositoryProtocol {
     associatedtype Model: PersistentModel
     func fetchAll() async throws -> [Model]

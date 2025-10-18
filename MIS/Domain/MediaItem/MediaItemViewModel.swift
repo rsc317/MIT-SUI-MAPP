@@ -5,44 +5,48 @@
 //  Created by Emircan Duman on 16.10.25.
 //
 
-import Foundation
 import Combine
+import Foundation
 import SwiftData
 
 @MainActor
 final class MediaItemViewModel: ObservableObject {
-    @Published private(set) var items: [MediaItem] = []
-    @Published var error: MediaItemError?
-
-    private let repository: MediaItemRepositoryProtocol
+    // MARK: - Lifecycle
 
     init(_ repository: MediaItemRepositoryProtocol) {
         self.repository = repository
     }
 
+    // MARK: - Internal
+
+    @Published private(set) var items = [MediaItemDataForm]()
+    @Published var error: MediaItemError?
+
     func loadItems() {
         Task {
             do {
-                items = try await repository.fetchAll()
+                let fetched = try await repository.fetchAll()
+                self.items = fetched.map { self.mapModelToDataForm($0) }
             } catch let caughtError {
                 self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
             }
         }
     }
 
-    func deleteItem(_ item: MediaItem) async {
+    func deleteItem(_ formData: MediaItemDataForm) async {
         do {
-            try await repository.delete(item)
-            items = try await repository.fetchAll()
+            try await repository.delete(byUUID: formData.id)
+            items.removeAll { $0.id == formData.id }
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
     }
-    
-    func addItem(from data: MediaItemFormData) async {
+
+    func addItem(from data: MediaItemDataForm) async {
         let item = MediaItem(
+            uuid: data.id,
             title: data.title,
-            desc: data.description,
+            desc: data.desc,
             src: data.src,
             createDate: data.createDate,
             type: data.type
@@ -50,9 +54,24 @@ final class MediaItemViewModel: ObservableObject {
 
         do {
             try await repository.add(item)
-            loadItems()
+            items.append(data)
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
+    }
+
+    // MARK: - Private
+
+    private let repository: MediaItemRepositoryProtocol
+
+    private func mapModelToDataForm(_ item: MediaItem) -> MediaItemDataForm {
+        MediaItemDataForm(
+            id: item.uuid,
+            title: item.title,
+            desc: item.desc,
+            src: item.src,
+            createDate: item.createDate,
+            type: item.type
+        )
     }
 }

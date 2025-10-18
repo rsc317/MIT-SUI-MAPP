@@ -5,6 +5,7 @@
 //  Created by Emircan Duman on 17.10.25.
 //
 
+import Foundation
 import SwiftData
 
 protocol MediaItemRepositoryProtocol {
@@ -12,4 +13,5 @@ protocol MediaItemRepositoryProtocol {
     func fetch(byId id: PersistentIdentifier) async throws -> MediaItem?
     func add(_ model: MediaItem) async throws
     func delete(_ model: MediaItem) async throws
+    func delete(byUUID uuid: UUID) async throws
 }

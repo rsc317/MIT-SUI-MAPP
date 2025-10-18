@@ -5,22 +5,25 @@
 //  Created by Emircan Duman on 16.10.25.
 //
 
-import SwiftUI
 import Combine
+import SwiftUI
 
+// MARK: - AppCoordinator -
 
 @MainActor
 final class AppCoordinator: ObservableObject {
-    private let container: DependencyContainerProtocol
-    @Published var path = NavigationPath()
-    @Published var sheet: Sheet?
-    @Published var fullScreenCover: FullScreenCover?
-        
+    // MARK: - Lifecycle
+
     init(container: DependencyContainerProtocol? = nil) {
         self.container = container ?? DependencyContainer()
     }
 
-    
+    // MARK: - Internal
+
+    @Published var path = NavigationPath()
+    @Published var sheet: Sheet?
+    @Published var fullScreenCover: FullScreenCover?
+
     @ViewBuilder
     func build(route: Route) -> some View {
         switch route {
@@ -30,52 +33,57 @@ final class AppCoordinator: ObservableObject {
             EmptyView()
         }
     }
-    
+
     @ViewBuilder
     func buildSheet(sheet: Sheet) -> some View {
         switch sheet {
-        case .addNewItem(let viewModel):
+        case let .addNewItem(viewModel):
             MediaItemAddView(viewModel: viewModel)
         }
     }
-    
+
     @ViewBuilder
     func buildCover(cover: FullScreenCover) -> some View {
         switch cover {
         case .editItem: EmptyView()
         }
     }
+
+    // MARK: - Private
+
+    private let container: DependencyContainerProtocol
 }
 
-//MARK: Navigation Functions
+// MARK: Navigation Functions
+
 extension AppCoordinator {
     func push(route: Route) {
         path.append(route)
     }
-    
+
     func pop() {
         guard !path.isEmpty else { return }
+
         path.removeLast()
     }
-    
+
     func popToRoot() {
         path = NavigationPath()
     }
-    
+
     func presentSheet(_ sheet: Sheet) {
         self.sheet = sheet
     }
-    
+
     func presentFullScreenCover(_ cover: FullScreenCover) {
-        self.fullScreenCover = cover
+        fullScreenCover = cover
     }
-    
+
     func dismissSheet() {
-        self.sheet = nil
+        sheet = nil
     }
-    
+
     func dismissCover() {
-        self.fullScreenCover = nil
+        fullScreenCover = nil
     }
 }
-

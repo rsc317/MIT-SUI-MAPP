@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// MARK: - LocalizationKeyProtocol -
+
 protocol LocalizationKeyProtocol {
     var rawValue: String { get }
     var string: String { get }
@@ -17,6 +19,7 @@ extension LocalizationKeyProtocol {
     var string: String {
         NSLocalizedString(rawValue, comment: "")
     }
+
     var localized: LocalizedStringKey {
         LocalizedStringKey(rawValue)
     }

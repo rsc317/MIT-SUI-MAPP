@@ -5,15 +5,16 @@
 //  Created by Emircan Duman on 17.10.25.
 //
 
-
 import SwiftUI
 
 struct AppRootView: View {
-    @StateObject private var coordinator: AppCoordinator
+    // MARK: - Lifecycle
 
     init(container: DependencyContainerProtocol = DependencyContainer()) {
         _coordinator = StateObject(wrappedValue: AppCoordinator(container: container))
     }
+
+    // MARK: - Internal
 
     var body: some View {
         TabView {
@@ -35,4 +36,8 @@ struct AppRootView: View {
         }
         .environmentObject(coordinator)
     }
+
+    // MARK: - Private
+
+    @StateObject private var coordinator: AppCoordinator
 }

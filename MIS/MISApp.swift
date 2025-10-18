@@ -5,9 +5,8 @@
 //  Created by Emircan Duman on 16.10.25.
 //
 
-import SwiftUI
 import SwiftData
-
+import SwiftUI
 
 @main
 struct MISApp: App {
