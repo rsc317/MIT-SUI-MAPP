@@ -6,8 +6,9 @@
 //
 
 import Combine
-import SwiftUI
 import Observation
+import SwiftUI
+
 // MARK: - AppCoordinator -
 
 @MainActor
@@ -29,7 +30,7 @@ final class AppCoordinator {
     func build(route: Route) -> some View {
         switch route {
         case .itemList:
-            MediaItemListView(viewModel: self.container.makeMediaItemViewModel())
+            MediaItemListView(viewModel: container.makeMediaItemViewModel())
         case .itemDetail:
             EmptyView()
         }

@@ -5,16 +5,11 @@
 //  Created by Emircan Duman on 18.10.25.
 //
 
-import SwiftUI
 import MapKit
+import SwiftUI
 
 struct MapsView: View {
-    @State private var position: MapCameraPosition = .region(
-        MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 52.52, longitude: 13.405),
-            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
-        )
-    )
+    // MARK: - Internal
 
     var body: some View {
         Map(position: $position) {
@@ -27,4 +22,13 @@ struct MapsView: View {
         }
         .ignoresSafeArea()
     }
+
+    // MARK: - Private
+
+    @State private var position = MapCameraPosition.region(
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 52.52, longitude: 13.405),
+            span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
+        )
+    )
 }

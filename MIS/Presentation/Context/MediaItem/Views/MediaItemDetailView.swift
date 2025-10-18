@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct MediaItemDetailView: View {
-    @Environment(AppCoordinator.self) private var coordinator
-
     let formData: MediaItemDataForm
 
     var body: some View {

@@ -7,8 +7,8 @@
 
 import Combine
 import Foundation
-import SwiftData
 import Observation
+import SwiftData
 
 @MainActor
 @Observable
