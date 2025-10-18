@@ -34,8 +34,6 @@ extension UIComponentFactory {
                                 accessibilityId: accessibilityId)
     }
 
-    // MARK: - Picker Factory (Generic)
-
     static func createPicker<T: Hashable>(label: LocalizationKeyProtocol,
                                           selection: Binding<T>,
                                           options: [T],

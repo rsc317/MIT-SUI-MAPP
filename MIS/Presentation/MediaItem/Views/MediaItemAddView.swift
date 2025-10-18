@@ -62,7 +62,7 @@ struct MediaItemAddView: View {
                                 let formData = MediaItemDataForm(
                                     title: title,
                                     desc: desc,
-                                    src: URL(fileURLWithPath: "/tmp/sample.png"),
+                                    src: URL(fileURLWithPath: "defaultPicture"),
                                     createDate: Date(),
                                     type: .picture
                                 )

@@ -24,6 +24,14 @@ struct MediaItemListView: View {
                         UIComponentFactory.createDeleteButton(action: {
                             Task { await viewModel.deleteItem(item) }
                         }, accessibilityId: MediaItemAID.BUTTON_DELETE)
+
+                        Button {
+                            selectedItem = item
+                            showingOptions = true
+                        } label: {
+                            Image(systemName: "ellipsis")
+                        }
+                        .tint(.gray)
                     }
             }
         }
@@ -37,25 +45,55 @@ struct MediaItemListView: View {
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
         .task { viewModel.loadItems() }
+        .confirmationDialog("Optionen", isPresented: $showingOptions, titleVisibility: .visible) {
+            Button("Aktion 1") {}
+            Button("Aktion 2") {}
+            Button("Abbrechen", role: .cancel) {}
+        }
     }
 
     // MARK: - Private
+
+    @State private var showingOptions = false
+    @State private var selectedItem: MediaItemDataForm?
 
     @ViewBuilder
     private func itemRow(_ item: MediaItemDataForm) -> some View {
         ZStack {
             Color.card
-            HStack(alignment: .center) {
-                Text(item.title)
-                    .font(.headline)
-                    .foregroundStyle(.text)
-                Text(item.formattedDate)
-                    .font(.subheadline)
-                    .foregroundStyle(.text)
+            HStack(alignment: .center, spacing: 12) {
+                rowImage(item.src)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 60, height: 60)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(item.title)
+                        .font(.headline)
+                        .foregroundStyle(.text)
+                    Text(item.formattedDate)
+                        .font(.subheadline)
+                        .foregroundStyle(.text)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
         }
         .listRowInsets(EdgeInsets())
+    }
+
+    private func rowImage(_ src: URL?) -> Image {
+        guard let src else {
+            return Image(systemName: "photo")
+        }
+
+        let assetName = src.lastPathComponent
+        if UIImage(named: assetName) != nil {
+            return Image(assetName)
+        }
+        if let uiImage = UIImage(contentsOfFile: src.path) {
+            return Image(uiImage: uiImage)
+        }
+        return Image(systemName: "photo")
     }
 }

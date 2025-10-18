@@ -40,7 +40,7 @@ struct MediaItemDataForm: Identifiable, Sendable, Hashable, Codable {
     var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
-        formatter.timeStyle = .short
+        formatter.timeStyle = .none
         return formatter.string(from: createDate)
     }
 

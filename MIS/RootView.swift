@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct AppRootView: View {
+struct RootView: View {
     // MARK: - Lifecycle
 
     init(container: DependencyContainerProtocol = DependencyContainer()) {

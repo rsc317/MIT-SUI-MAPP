@@ -8,7 +8,7 @@
 import SwiftUI
 
 extension UIComponentFactory {
-    static func createAddButton(systemImage: String? = "plus.circle", action: @escaping () -> Void, accessibilityId: AccessibilityIdentifierProtocol) -> some View {
+    static func createAddButton(systemImage: String? = "plus", action: @escaping () -> Void, accessibilityId: AccessibilityIdentifierProtocol) -> some View {
         Button(action: {
             action()
         }) {

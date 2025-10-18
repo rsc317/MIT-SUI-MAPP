@@ -12,7 +12,7 @@ import SwiftUI
 struct MISApp: App {
     var body: some Scene {
         WindowGroup {
-            AppRootView()
+            RootView()
         }
     }
 }
