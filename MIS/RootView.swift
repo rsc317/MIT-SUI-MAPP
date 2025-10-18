@@ -33,6 +33,11 @@ struct RootView: View {
             .tabItem {
                 Label(MediaItemLK.NAV_TITLE.localized, systemImage: "list.bullet.rectangle")
             }
+
+            MapsView()
+                .tabItem {
+                    Label("Karte", systemImage: "map")
+                }
         }
         .environmentObject(coordinator)
     }
