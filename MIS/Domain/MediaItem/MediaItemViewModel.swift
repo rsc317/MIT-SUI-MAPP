@@ -7,10 +7,12 @@
 
 import Combine
 import Foundation
+import Observation
 import SwiftData
 
 @MainActor
-final class MediaItemViewModel: ObservableObject {
+@Observable
+final class MediaItemViewModel {
     // MARK: - Lifecycle
 
     init(_ repository: MediaItemRepositoryProtocol) {
@@ -19,8 +21,8 @@ final class MediaItemViewModel: ObservableObject {
 
     // MARK: - Internal
 
-    @Published private(set) var items = [MediaItemDataForm]()
-    @Published var error: MediaItemError?
+    private(set) var items = [MediaItemDataForm]()
+    var error: MediaItemError?
 
     func loadItems() {
         Task {

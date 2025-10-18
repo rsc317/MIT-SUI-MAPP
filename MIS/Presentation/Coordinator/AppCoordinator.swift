@@ -6,12 +6,14 @@
 //
 
 import Combine
+import Observation
 import SwiftUI
 
 // MARK: - AppCoordinator -
 
 @MainActor
-final class AppCoordinator: ObservableObject {
+@Observable
+final class AppCoordinator {
     // MARK: - Lifecycle
 
     init(container: DependencyContainerProtocol? = nil) {
@@ -20,15 +22,15 @@ final class AppCoordinator: ObservableObject {
 
     // MARK: - Internal
 
-    @Published var path = NavigationPath()
-    @Published var sheet: Sheet?
-    @Published var fullScreenCover: FullScreenCover?
+    var path = NavigationPath()
+    var sheet: Sheet?
+    var fullScreenCover: FullScreenCover?
 
     @ViewBuilder
     func build(route: Route) -> some View {
         switch route {
         case .itemList:
-            MediaItemListView(viewModel: self.container.makeMediaItemViewModel())
+            MediaItemListView(viewModel: container.makeMediaItemViewModel())
         case .itemDetail:
             EmptyView()
         }

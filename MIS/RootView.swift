@@ -11,10 +11,12 @@ struct RootView: View {
     // MARK: - Lifecycle
 
     init(container: DependencyContainerProtocol = DependencyContainer()) {
-        _coordinator = StateObject(wrappedValue: AppCoordinator(container: container))
+        _coordinator = State(initialValue: AppCoordinator(container: container))
     }
 
     // MARK: - Internal
+
+    // MARK: - Body
 
     var body: some View {
         TabView {
@@ -33,11 +35,16 @@ struct RootView: View {
             .tabItem {
                 Label(MediaItemLK.NAV_TITLE.localized, systemImage: "list.bullet.rectangle")
             }
+
+            MapsView()
+                .tabItem {
+                    Label("Karte", systemImage: "map")
+                }
         }
-        .environmentObject(coordinator)
+        .environment(coordinator)
     }
 
     // MARK: - Private
 
-    @StateObject private var coordinator: AppCoordinator
+    @State private var coordinator: AppCoordinator
 }
