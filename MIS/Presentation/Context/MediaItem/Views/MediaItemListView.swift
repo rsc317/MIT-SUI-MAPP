@@ -10,8 +10,8 @@ import SwiftUI
 struct MediaItemListView: View {
     // MARK: - Internal
 
-    @EnvironmentObject var coordinator: AppCoordinator
-    @StateObject var viewModel: MediaItemViewModel
+    @Environment(AppCoordinator.self) private var coordinator
+    @State var viewModel: MediaItemViewModel
 
     var body: some View {
         List {

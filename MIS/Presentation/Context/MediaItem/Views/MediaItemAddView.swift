@@ -13,8 +13,8 @@ struct MediaItemAddView: View {
         case title, desc
     }
 
-    @EnvironmentObject var coordinator: AppCoordinator
-    @StateObject var viewModel: MediaItemViewModel
+    @Environment(AppCoordinator.self) private var coordinator
+    @State var viewModel: MediaItemViewModel
 
     var body: some View {
         NavigationStack {
