@@ -19,7 +19,7 @@ struct MediaItemListView: View {
             ForEach(viewModel.items, id: \.id) { item in
                 itemRow(item)
                     .onTapGesture {
-                        coordinator.push(route: .itemDetail)
+                        coordinator.push(route: .itemDetail(item))
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         UIComponentFactory.createDeleteButton(action: {
@@ -36,8 +36,7 @@ struct MediaItemListView: View {
                     }
             }
         }
-        .listStyle(.automatic)
-        .background(Color.background)
+        .applyGlobalBackground()
         .modifier(NavigationBarTitleColorModifier(color: .accent))
         .navigationTitle(MediaItemLK.NAV_TITLE.localized)
         .toolbar {

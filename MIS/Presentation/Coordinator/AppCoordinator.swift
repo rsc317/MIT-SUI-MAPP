@@ -31,8 +31,8 @@ final class AppCoordinator {
         switch route {
         case .itemList:
             MediaItemListView(viewModel: container.makeMediaItemViewModel())
-        case .itemDetail:
-            EmptyView()
+        case let .itemDetail(item):
+            MediaItemDetailView(item: item, viewModel: container.makeMediaItemDetailViewModel(item))
         }
     }
 

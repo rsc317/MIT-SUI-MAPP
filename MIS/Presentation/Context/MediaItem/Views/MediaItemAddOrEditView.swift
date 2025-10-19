@@ -41,7 +41,7 @@ struct MediaItemAddOrEditView: View {
                     .submitLabel(.done)
                 }
             }
-            .background(Color.background)
+            .applyGlobalBackground()
             .navigationTitle(isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
             .toolbarTitleDisplayMode(.inline)
             .modifier(NavigationBarTitleColorModifier(color: .accent))
@@ -58,7 +58,7 @@ struct MediaItemAddOrEditView: View {
                             coordinator.dismissSheet()
                         },
                         accessibilityId: isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
-                        color: .error
+                        color: isEditMode ? .error : .accent
                     )
                 }
 

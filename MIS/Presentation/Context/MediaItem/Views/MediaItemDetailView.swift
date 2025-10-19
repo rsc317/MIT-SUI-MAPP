@@ -8,48 +8,55 @@
 import SwiftUI
 
 struct MediaItemDetailView: View {
-    let formData: MediaItemDataForm
+    // MARK: - Internal
 
+    @State var item: MediaItemDataForm
+    @State var viewModel: MediaItemDetailViewModel
+    
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.background.opacity(0.15))
-                    .frame(width: 120, height: 120)
-                    .overlay {
-                        Image(systemName: formData.typeDisplayName)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 60, height: 60)
-                            .foregroundStyle(.text)
-                    }
-
-                Text(formData.title)
-                    .font(.title)
-                    .bold()
-                    .foregroundStyle(.text)
-
-                Text(formData.type.rawValue.capitalized)
-                    .font(.headline)
-                    .foregroundStyle(.text)
-
-                Text(formData.createDate, format: .dateTime)
-                    .foregroundStyle(.text)
-
-                if let desc = formData.desc, !desc.isEmpty {
-                    Text(desc)
-                        .foregroundStyle(.text)
-                        .multilineTextAlignment(.leading)
-                } else {
-                    Text(LocalizedStringKey("No description"))
-                        .italic()
-                        .foregroundStyle(.text.opacity(0.6))
-                }
-            }
-            .padding()
+        VStack(spacing: 16) {
+            rowImage(item.src)
+                .resizable()
+                .scaledToFit()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .foregroundStyle(.accent)
         }
-        .navigationTitle(formData.title)
+        .navigationTitle(item.title)
         .toolbarTitleDisplayMode(.inline)
         .modifier(NavigationBarTitleColorModifier(color: .accent))
+        .toolbar {
+            ToolbarItem(placement: .destructiveAction) {
+                Button(role: .destructive, action: {
+                    Task {
+                        await viewModel.deleteItem(item)
+                        coordinator.pop()
+                    }
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.error)
+                }
+                .accessibilityIdentifier(MediaItemAID.BUTTON_DELETE.rawValue)
+            }
+        }
+        .applyGlobalBackground()
+    }
+
+    // MARK: - Private
+
+    @Environment(AppCoordinator.self) private var coordinator
+
+    private func rowImage(_ src: URL?) -> Image {
+        guard let src else {
+            return Image(systemName: "photo")
+        }
+
+        let assetName = src.lastPathComponent
+        if UIImage(named: assetName) != nil {
+            return Image(assetName)
+        }
+        if let uiImage = UIImage(contentsOfFile: src.path) {
+            return Image(uiImage: uiImage)
+        }
+        return Image(systemName: "photo")
     }
 }

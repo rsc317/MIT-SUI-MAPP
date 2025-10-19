@@ -11,4 +11,8 @@ extension View {
     func navigationBarTitleColor(_ color: Color) -> some View {
         modifier(NavigationBarTitleColorModifier(color: color))
     }
+
+    func applyGlobalBackground() -> some View {
+        modifier(GlobalBackgroundModifier())
+    }
 }
