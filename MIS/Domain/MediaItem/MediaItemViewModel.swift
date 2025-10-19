@@ -22,6 +22,8 @@ final class MediaItemViewModel {
     // MARK: - Internal
 
     private(set) var items = [MediaItemDataForm]()
+    var selectedItem: MediaItemDataForm?
+
     var error: MediaItemError?
 
     func loadItems() {
@@ -42,6 +44,13 @@ final class MediaItemViewModel {
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
+    }
+
+    func deleteSelectedItem() async {
+        guard let selectedItem else { return }
+
+        await deleteItem(selectedItem)
+        self.selectedItem = nil
     }
 
     func addItem(from data: MediaItemDataForm) async {

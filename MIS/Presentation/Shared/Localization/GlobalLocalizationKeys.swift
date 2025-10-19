@@ -10,4 +10,5 @@ enum GlobalLocalizationKeys: String, LocalizationKeyProtocol {
     case BUTTON_CANCEL
     case BUTTON_ADD
     case BUTTON_DELETE
+    case BUTTON_EDIT
 }

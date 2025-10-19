@@ -16,7 +16,11 @@ enum MediaItemLK: String, LocalizationKeyProtocol {
 
     case TYPE_DISPLAY_NAME_VIDEO
     case TYPE_DISPLAY_NAME_PICTURE
-
+    
+    case DELETE_ACTION
+    case EDIT_ACTION
+    case CANCEL_ACTION
+    
     case REPOSITORY_FAILURE_ERROR_KEY
     case ITEM_NOT_FOUND
     case UNKNOWN_ERROR_KEY

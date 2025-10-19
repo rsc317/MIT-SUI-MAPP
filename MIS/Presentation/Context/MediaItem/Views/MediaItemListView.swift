@@ -11,6 +11,7 @@ struct MediaItemListView: View {
     // MARK: - Internal
 
     @Environment(AppCoordinator.self) private var coordinator
+
     @State var viewModel: MediaItemViewModel
 
     var body: some View {
@@ -26,7 +27,7 @@ struct MediaItemListView: View {
                         }, accessibilityId: MediaItemAID.BUTTON_DELETE)
 
                         Button {
-                            selectedItem = item
+                            viewModel.selectedItem = item
                             showingOptions = true
                         } label: {
                             Image(systemName: "ellipsis")
@@ -45,17 +46,20 @@ struct MediaItemListView: View {
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
         .task { viewModel.loadItems() }
-        .confirmationDialog("Optionen", isPresented: $showingOptions, titleVisibility: .visible) {
-            Button("Aktion 1") {}
-            Button("Aktion 2") {}
-            Button("Abbrechen", role: .cancel) {}
+        .confirmationDialog(viewModel.selectedItem?.title ?? "Unbekannt", isPresented: $showingOptions, titleVisibility: .visible) {
+            Button(GlobalLocalizationKeys.BUTTON_DELETE.localized, role: .destructive) {
+                Task {
+                    await viewModel.deleteSelectedItem()
+                }
+            }
+            Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {}
+            Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }
     }
 
     // MARK: - Private
 
     @State private var showingOptions = false
-    @State private var selectedItem: MediaItemDataForm?
 
     @ViewBuilder
     private func itemRow(_ item: MediaItemDataForm) -> some View {

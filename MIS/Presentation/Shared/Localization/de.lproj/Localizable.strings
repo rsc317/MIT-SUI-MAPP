@@ -11,6 +11,7 @@
 "BUTTON_CANCEL" = "Abbrechen";
 "BUTTON_ADD" = "Hinzufügen";
 "BUTTON_DELETE" = "Löschen";
+"BUTTON_EDIT" = "Bearbeiten";
 
 //MARK: Repository Errors
 "REPOSITORY_FAILURE_ERROR_KEY" = "Ein Fehler ist beim Zugriff auf das Repository aufgetreten. Bitte versuchen Sie es später erneut.";
@@ -23,3 +24,5 @@
 "SECTION_PERSONAL_INFORMATION" = "Informationen";
 "TITLE" = "Titel";
 "DESC" = "Beschreibung";
+"DELETE_ACTION" = "Löschen";
+"EDIT_ACTION" = "Bearbeiten";

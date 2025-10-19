@@ -11,6 +11,7 @@
 "BUTTON_CANCEL" = "Cancel";
 "BUTTON_ADD" = "Add";
 "BUTTON_DELETE" = "Delete";
+"BUTTON_EDIT" = "Edit";
 
 //MARK: Repository Errors
 "REPOSITORY_FAILURE_ERROR_KEY" = "An error occurred while accessing the repository. Please try again later.";
