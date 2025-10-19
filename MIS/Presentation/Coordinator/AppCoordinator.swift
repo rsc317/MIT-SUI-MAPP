@@ -39,8 +39,8 @@ final class AppCoordinator {
     @ViewBuilder
     func buildSheet(sheet: Sheet) -> some View {
         switch sheet {
-        case let .addNewItem(viewModel):
-            MediaItemAddView(viewModel: viewModel)
+        case let .addOrEditNewItem(viewModel):
+            MediaItemAddOrEditView(viewModel: viewModel)
         }
     }
 

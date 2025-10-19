@@ -6,7 +6,7 @@
 
 import SwiftUI
 
-struct MediaItemAddView: View {
+struct MediaItemAddOrEditView: View {
     // MARK: - Internal
 
     enum Field: Hashable {

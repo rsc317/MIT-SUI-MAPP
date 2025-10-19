@@ -42,7 +42,7 @@ struct MediaItemListView: View {
         .navigationTitle(MediaItemLK.NAV_TITLE.localized)
         .toolbar {
             UIComponentFactory.createAddButton(action: {
-                coordinator.presentSheet(.addNewItem(viewModel))
+                coordinator.presentSheet(.addOrEditNewItem(viewModel))
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
         .task { viewModel.loadItems() }
@@ -53,7 +53,7 @@ struct MediaItemListView: View {
                 }
             }
             Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {
-                coordinator.presentSheet(.addNewItem(viewModel))
+                coordinator.presentSheet(.addOrEditNewItem(viewModel))
             }
             Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }

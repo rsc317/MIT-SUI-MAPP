@@ -8,14 +8,14 @@
 import Foundation
 
 enum Sheet: Identifiable {
-    case addNewItem(MediaItemViewModel)
+    case addOrEditNewItem(MediaItemViewModel)
 
     // MARK: - Internal
 
     var id: String {
         switch self {
-        case .addNewItem:
-            "addNewItem"
+        case .addOrEditNewItem:
+            "addOrEditNewItem"
         }
     }
 }
