@@ -40,9 +40,22 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
             try context.save()
         }
     }
+    
+    func fetch(byUUID uuid: UUID) async throws -> MediaItem? {
+        let descriptor = FetchDescriptor<MediaItem>(
+            predicate: #Predicate { $0.uuid == uuid }
+        )
 
+        return try context.fetch(descriptor).first
+    }
+    
     func fetch(byId id: PersistentIdentifier) async throws -> MediaItem? {
         try await baseRepository.fetch(byId: id)
+    }
+    
+    func update(_ model: MediaItem) async throws {
+        guard let ctx = model.modelContext else { return }
+        try ctx.save()
     }
 
     // MARK: - Private
@@ -50,3 +63,4 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
     private let baseRepository: Repository<MediaItem>
     private let context: ModelContext
 }
+

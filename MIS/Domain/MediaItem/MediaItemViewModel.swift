@@ -70,11 +70,29 @@ final class MediaItemViewModel {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
     }
-
+    
+    func editItem() async {
+        guard let selectedItem else { return }
+        do {
+            if let model = try await repository.fetch(byUUID: selectedItem.id) {
+                model.title = selectedItem.title
+                model.desc = selectedItem.desc
+                model.src = selectedItem.src
+                model.type = selectedItem.type
+                try await repository.update(model)
+                if let idx = items.firstIndex(where: { $0.id == selectedItem.id }) {
+                    items[idx] = selectedItem
+                }
+            }
+        } catch let caughtError {
+            self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
+        }
+    }
+    
     // MARK: - Private
 
     private let repository: MediaItemRepositoryProtocol
-
+    
     private func mapModelToDataForm(_ item: MediaItem) -> MediaItemDataForm {
         MediaItemDataForm(
             id: item.uuid,

@@ -42,15 +42,23 @@ struct MediaItemAddView: View {
                 }
             }
             .background(Color.background)
-            .navigationTitle(MediaItemLK.ADD_NAV_TITLE.localized)
+            .navigationTitle(isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
             .toolbarTitleDisplayMode(.inline)
             .modifier(NavigationBarTitleColorModifier(color: .accent))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     UIComponentFactory.createToolbarButton(
-                        label: GlobalLocalizationKeys.BUTTON_CANCEL,
-                        action: { coordinator.dismissSheet() },
-                        accessibilityId: MediaItemAID.BUTTON_CANCEL
+                        label: isEditMode ? GlobalLocalizationKeys.BUTTON_DELETE : GlobalLocalizationKeys.BUTTON_CANCEL,
+                        action: {
+                            if isEditMode {
+                                Task {
+                                    await viewModel.deleteSelectedItem()
+                                }
+                            }
+                            coordinator.dismissSheet()
+                        },
+                        accessibilityId: isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
+                        color: .error
                     )
                 }
 
@@ -59,14 +67,20 @@ struct MediaItemAddView: View {
                         label: GlobalLocalizationKeys.BUTTON_SAVE,
                         action: {
                             Task {
-                                let formData = MediaItemDataForm(
-                                    title: title,
-                                    desc: desc,
-                                    src: URL(fileURLWithPath: "defaultPicture"),
-                                    createDate: Date(),
-                                    type: .picture
-                                )
-                                await viewModel.addItem(from: formData)
+                                if isEditMode {
+                                    viewModel.selectedItem?.title = title
+                                    viewModel.selectedItem?.desc = desc
+                                    await viewModel.editItem()
+                                } else {
+                                    let formData = MediaItemDataForm(
+                                        title: title,
+                                        desc: desc,
+                                        src: URL(fileURLWithPath: "defaultPicture"),
+                                        createDate: Date(),
+                                        type: .picture
+                                    )
+                                    await viewModel.addItem(from: formData)
+                                }
                                 coordinator.dismissSheet()
                             }
                         },
@@ -74,8 +88,15 @@ struct MediaItemAddView: View {
                     )
                 }
             }
-            .tint(.accentColor)
-            .onAppear { focusedField = .title }
+            .onAppear {
+                isEditMode = viewModel.selectedItem != nil
+                focusedField = .title
+                title = viewModel.selectedItem?.title ?? ""
+                desc = viewModel.selectedItem?.desc ?? ""
+            }
+            .onDisappear {
+                viewModel.selectedItem = nil
+            }
         }
     }
 
@@ -83,6 +104,6 @@ struct MediaItemAddView: View {
 
     @State private var title = ""
     @State private var desc = ""
-
+    @State private var isEditMode: Bool = false
     @FocusState private var focusedField: Field?
 }

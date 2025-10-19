@@ -45,12 +45,12 @@ extension UIComponentFactory {
         .accessibilityIdentifier(accessibilityId.rawValue)
     }
 
-    static func createToolbarButton(label: LocalizationKeyProtocol, action: @escaping () -> Void, accessibilityId: AccessibilityIdentifierProtocol) -> some View {
+    static func createToolbarButton(label: LocalizationKeyProtocol, action: @escaping () -> Void, accessibilityId: AccessibilityIdentifierProtocol, color: Color = .interaction) -> some View {
         Button(action: {
             action()
         }) {
             Text(label.localized)
-                .foregroundStyle(Color.interaction)
+                .foregroundStyle(color)
         }
         .accessibilityIdentifier(accessibilityId.rawValue)
     }

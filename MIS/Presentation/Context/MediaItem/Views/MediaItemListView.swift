@@ -52,7 +52,9 @@ struct MediaItemListView: View {
                     await viewModel.deleteSelectedItem()
                 }
             }
-            Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {}
+            Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {
+                coordinator.presentSheet(.addNewItem(viewModel))
+            }
             Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }
     }
