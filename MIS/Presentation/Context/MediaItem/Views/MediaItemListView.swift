@@ -67,7 +67,7 @@ struct MediaItemListView: View {
         ZStack {
             Color.card
             HStack(alignment: .center, spacing: 12) {
-                rowImage(item.src)
+                rowImage(item.fileSrc)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 60, height: 60)
@@ -87,18 +87,20 @@ struct MediaItemListView: View {
         .listRowInsets(EdgeInsets())
     }
 
-    private func rowImage(_ src: URL?) -> Image {
-        guard let src else {
+    private func rowImage(_ fileSrc: String?) -> Image {
+        guard let url = viewModel.getImageURL(fileSrc) else {
             return Image(systemName: "photo")
         }
 
-        let assetName = src.lastPathComponent
+        let assetName = url.lastPathComponent
         if UIImage(named: assetName) != nil {
             return Image(assetName)
         }
-        if let uiImage = UIImage(contentsOfFile: src.path) {
+        
+        if let uiImage = UIImage(contentsOfFile: url.path) {
             return Image(uiImage: uiImage)
         }
+        
         return Image(systemName: "photo")
     }
 }

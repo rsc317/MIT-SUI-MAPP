@@ -10,20 +10,20 @@ import Foundation
 struct MediaItemDataForm: Identifiable, Sendable, Hashable, Codable {
     // MARK: - Lifecycle
 
-    init(title: String, desc: String?, src: URL, createDate: Date, type: MediaType) {
+    init(title: String, desc: String?, fileSrc: String, createDate: Date, type: MediaType) {
         id = UUID()
         self.title = title
         self.desc = desc
-        self.src = src
+        self.fileSrc = fileSrc
         self.createDate = createDate
         self.type = type
     }
 
-    init(id: UUID, title: String, desc: String?, src: URL, createDate: Date, type: MediaType) {
+    init(id: UUID, title: String, desc: String?, fileSrc: String, createDate: Date, type: MediaType) {
         self.id = id
         self.title = title
         self.desc = desc
-        self.src = src
+        self.fileSrc = fileSrc
         self.createDate = createDate
         self.type = type
     }
@@ -33,7 +33,7 @@ struct MediaItemDataForm: Identifiable, Sendable, Hashable, Codable {
     let id: UUID
     var title: String
     var desc: String?
-    var src: URL
+    var fileSrc: String
     var createDate: Date
     var type: MediaType
 

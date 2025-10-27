@@ -21,9 +21,10 @@ final class MediaItemViewModel {
 
     // MARK: - Internal
 
-    private(set) var items = [MediaItemDataForm]()
+    var items = [MediaItemDataForm]()
     var selectedItem: MediaItemDataForm?
-
+    var newItem: MediaItemDataForm?
+    var selectedImageData: Data?
     var error: MediaItemError?
 
     func loadItems() {
@@ -53,52 +54,80 @@ final class MediaItemViewModel {
         self.selectedItem = nil
     }
 
-    func addItem(from data: MediaItemDataForm) async {
-        let item = MediaItem(
-            uuid: data.id,
-            title: data.title,
-            desc: data.desc,
-            src: data.src,
-            createDate: data.createDate,
-            type: data.type
-        )
+    func addItem() async {
+        guard let newItem else { return }
 
         do {
+            let item = MediaItem(
+                uuid: newItem.id,
+                title: newItem.title,
+                desc: newItem.desc,
+                fileSrc: newItem.fileSrc,
+                createDate: newItem.createDate,
+                type: newItem.type
+            )
             try await repository.add(item)
-            items.append(data)
+            items.append(newItem)
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
     }
-    
+
+    func addImageToLocal(_ name: String) async -> String {
+        var defaultUrl = URL(fileURLWithPath: "defaultPicture").lastPathComponent
+        do {
+            if let selectedImageData {
+                defaultUrl = try repository.saveImageLocally(selectedImageData, with: name)
+            }
+        } catch let caughtError {
+            self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
+            return defaultUrl
+        }
+        return defaultUrl
+    }
+
     func editItem() async {
         guard let selectedItem else { return }
+
         do {
-            if let model = try await repository.fetch(byUUID: selectedItem.id) {
+            if let model = try await repository.fetch(byUUID: selectedItem.id),
+               let selectedImageData {
+                let src = try repository.saveImageLocally(selectedImageData, with: selectedItem.id.uuidString + ".jpg")
                 model.title = selectedItem.title
                 model.desc = selectedItem.desc
-                model.src = selectedItem.src
+                model.fileSrc = src
                 model.type = selectedItem.type
                 try await repository.update(model)
                 if let idx = items.firstIndex(where: { $0.id == selectedItem.id }) {
-                    items[idx] = selectedItem
+                    items[idx] = mapModelToDataForm(model)
                 }
             }
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
     }
+
+    func disappear() {
+        selectedItem = nil
+        error = nil
+        newItem = nil
+        selectedImageData = nil
+    }
     
+    func getImageURL(_ fileSrc: String?) -> URL? {
+        guard let fileSrc else { return nil }
+        return self.repository.getImageURL(for: fileSrc)
+    }
     // MARK: - Private
 
     private let repository: MediaItemRepositoryProtocol
-    
+
     private func mapModelToDataForm(_ item: MediaItem) -> MediaItemDataForm {
-        MediaItemDataForm(
+        return MediaItemDataForm(
             id: item.uuid,
             title: item.title,
             desc: item.desc,
-            src: item.src,
+            fileSrc: item.fileSrc,
             createDate: item.createDate,
             type: item.type
         )

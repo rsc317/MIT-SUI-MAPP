@@ -16,4 +16,6 @@ protocol MediaItemRepositoryProtocol {
     func delete(_ model: MediaItem) async throws
     func delete(byUUID uuid: UUID) async throws
     func update(_ model: MediaItem) async throws
+    func saveImageLocally(_ data: Data, with fileName: String) throws -> String
+    func getImageURL(for fileName: String) -> URL
 }

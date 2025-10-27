@@ -17,13 +17,13 @@ final class MediaItem: Identifiable, Sendable {
     init(uuid: UUID = UUID(),
          title: String,
          desc: String? = nil,
-         src: URL,
+         fileSrc: String,
          createDate: Date = Date(),
          type: MediaType = .picture) {
         self.uuid = uuid
         self.title = title
         self.desc = desc
-        self.src = src
+        self.fileSrc = fileSrc
         self.createDate = createDate
         self.type = type
     }
@@ -34,7 +34,7 @@ final class MediaItem: Identifiable, Sendable {
 
     var title: String
     var desc: String?
-    var src: URL
+    var fileSrc: String
     var createDate: Date
     var type: MediaType
 }

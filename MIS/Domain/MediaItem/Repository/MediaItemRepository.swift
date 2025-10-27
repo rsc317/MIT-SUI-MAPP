@@ -40,7 +40,7 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
             try context.save()
         }
     }
-    
+
     func fetch(byUUID uuid: UUID) async throws -> MediaItem? {
         let descriptor = FetchDescriptor<MediaItem>(
             predicate: #Predicate { $0.uuid == uuid }
@@ -48,19 +48,31 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
         return try context.fetch(descriptor).first
     }
-    
+
     func fetch(byId id: PersistentIdentifier) async throws -> MediaItem? {
         try await baseRepository.fetch(byId: id)
     }
-    
+
     func update(_ model: MediaItem) async throws {
         guard let ctx = model.modelContext else { return }
+
         try ctx.save()
+    }
+
+    func saveImageLocally(_ data: Data, with fileName: String) throws -> String {
+        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+        try data.write(to: fileURL)
+        return fileName
+    }
+
+    func getImageURL(for fileName: String) -> URL {
+        documentsURL.appending(path: fileName, directoryHint: .notDirectory)
     }
 
     // MARK: - Private
 
+    private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+
     private let baseRepository: Repository<MediaItem>
     private let context: ModelContext
 }
-

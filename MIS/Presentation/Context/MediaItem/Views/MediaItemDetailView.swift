@@ -15,7 +15,7 @@ struct MediaItemDetailView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            rowImage(item.src)
+            rowImage(item.fileSrc)
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -45,18 +45,15 @@ struct MediaItemDetailView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
 
-    private func rowImage(_ src: URL?) -> Image {
-        guard let src else {
+    private func rowImage(_ fileScr: String?) -> Image {
+        guard let fileUrl = viewModel.getImageURL(fileScr) else {
             return Image(systemName: "photo")
         }
 
-        let assetName = src.lastPathComponent
-        if UIImage(named: assetName) != nil {
-            return Image(assetName)
-        }
-        if let uiImage = UIImage(contentsOfFile: src.path) {
+        if let uiImage = UIImage(contentsOfFile: fileUrl.path) {
             return Image(uiImage: uiImage)
         }
+
         return Image(systemName: "photo")
     }
 }

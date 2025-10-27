@@ -33,6 +33,11 @@ final class MediaItemDetailViewModel {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
     }
+    
+    func getImageURL(_ fileSrc: String?) -> URL? {
+        guard let fileSrc else { return nil }
+        return self.repository.getImageURL(for: fileSrc)
+    }
 
     // MARK: - Private
 
