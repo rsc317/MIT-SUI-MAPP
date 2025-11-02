@@ -101,14 +101,15 @@ final class MediaItemViewModel {
         }
     }
     
-    func createNewItem(_ title: String, _ desc: String) async {
+    func createNewItem(_ title: String, _ desc: String) async -> String {
         if newItem == nil {
             let id = UUID()
-            let fileName = id.uuidString + ".jpg"
             let newTitle = title.isEmpty ? id.uuidString : title
-            let fileSrc = await addImageToLocal(fileName)
+            let fileSrc = await addImageToLocal(id.uuidString + ".jpg")
             self.newItem = MediaItemDTO(id: id, title: newTitle, desc: desc, fileSrc: fileSrc, createDate: Date(), type: .picture)
         }
+        
+        return newItem?.title ?? ""
     }
     
     func disappear() {

@@ -133,7 +133,7 @@ struct MediaItemAddOrEditView: View {
         Task {
             guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
             viewModel.selectedImageData = data
-            await viewModel.createNewItem(title, desc)
+            self.title = await viewModel.createNewItem(title, desc)
         }
     }
 }
