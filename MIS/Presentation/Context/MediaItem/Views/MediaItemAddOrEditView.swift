@@ -17,21 +17,28 @@ struct MediaItemAddOrEditView: View {
     @Environment(AppCoordinator.self) private var coordinator
     @State var viewModel: MediaItemViewModel
     @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var titleError: String? = nil
+    @State private var imageError: String? = nil
 
     var body: some View {
         NavigationStack {
             Form {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        UIComponentFactory.createTextfield(
-                            label: MediaItemLK.TITLE,
-                            text: $title,
-                            accessibilityId: MediaItemAID.TITLE
-                        )
-                        .focused($focusedField, equals: .title)
-                        .submitLabel(.next)
-                        .onSubmit { focusedField = .desc }
-
+                        VStack(alignment: .leading, spacing: 4) {
+                            UIComponentFactory.createTextfield(
+                                label: MediaItemLK.TITLE,
+                                text: $title,
+                                accessibilityId: MediaItemAID.TITLE
+                            )
+                            .focused($focusedField, equals: .title)
+                            .submitLabel(.next)
+                            .onSubmit { focusedField = .desc }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .stroke(titleError != nil ? Color.red : Color.clear, lineWidth: 1)
+                            )
+                        }
                         PhotosPicker(
                             selection: $selectedItem,
                             matching: .images,
@@ -43,6 +50,8 @@ struct MediaItemAddOrEditView: View {
                             prepareMediaItem(newItem)
                         }
                     }
+                    buildErrorView()
+
                     ZStack {
                         if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
                             Image(uiImage: uiImage)
@@ -83,12 +92,17 @@ struct MediaItemAddOrEditView: View {
                         color: isEditMode ? .error : .accentColor
                     )
                 }
-
                 ToolbarItem(placement: .confirmationAction) {
                     UIComponentFactory.createToolbarButton(
                         label: GlobalLocalizationKeys.BUTTON_SAVE,
                         action: {
                             Task {
+                                validateView()
+
+                                guard titleError == nil, imageError == nil else {
+                                    return
+                                }
+                                
                                 if isEditMode {
                                     viewModel.selectedItem?.title = title
                                     viewModel.selectedItem?.desc = desc
@@ -98,6 +112,7 @@ struct MediaItemAddOrEditView: View {
                                     viewModel.newItem?.desc = desc
                                     await viewModel.saveItem()
                                 }
+
                                 coordinator.dismissSheet()
                             }
                         },
@@ -119,6 +134,15 @@ struct MediaItemAddOrEditView: View {
             .onDisappear {
                 viewModel.disappear()
             }
+            .onChange(of: title) { _, newValue in
+                if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    titleError = nil
+                }
+            }
+            .onChange(of: selectedItem) { _, newItem in
+                prepareMediaItem(newItem)
+                imageError = nil
+            }
         }
     }
 
@@ -132,8 +156,38 @@ struct MediaItemAddOrEditView: View {
     private func prepareMediaItem(_ item: PhotosPickerItem?) {
         Task {
             guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+
             viewModel.selectedImageData = data
-            self.title = await viewModel.createNewItem(title, desc)
+            title = await viewModel.createNewItem(title, desc)
+        }
+    }
+
+    private func validateView() {
+        titleError = nil
+        imageError = nil
+
+        if title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            titleError = "Titel darf nicht leer sein."
+        }
+
+        if viewModel.selectedImageData == nil {
+            imageError = "Bitte wähle ein Bild aus."
+        }
+    }
+
+    private func buildErrorView() -> some View {
+        VStack {
+            if let titleError {
+                Text(titleError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
+
+            if let imageError {
+                Text(imageError)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
         }
     }
 }
