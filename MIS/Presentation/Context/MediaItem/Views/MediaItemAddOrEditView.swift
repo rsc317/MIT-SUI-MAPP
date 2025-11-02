@@ -66,7 +66,7 @@ struct MediaItemAddOrEditView: View {
             .applyGlobalBackground()
             .navigationTitle(isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
             .toolbarTitleDisplayMode(.inline)
-            .modifier(NavigationBarTitleColorModifier(color: .accent))
+            .modifier(NavigationBarTitleColorModifier(color: .accentColor))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     UIComponentFactory.createToolbarButton(
@@ -80,7 +80,7 @@ struct MediaItemAddOrEditView: View {
                             coordinator.dismissSheet()
                         },
                         accessibilityId: isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
-                        color: isEditMode ? .error : .accent
+                        color: isEditMode ? .error : .accentColor
                     )
                 }
 
@@ -96,7 +96,7 @@ struct MediaItemAddOrEditView: View {
                                 } else {
                                     viewModel.newItem?.title = title
                                     viewModel.newItem?.desc = desc
-                                    await viewModel.addItem()
+                                    await viewModel.saveItem()
                                 }
                                 coordinator.dismissSheet()
                             }
@@ -131,15 +131,9 @@ struct MediaItemAddOrEditView: View {
 
     private func prepareMediaItem(_ item: PhotosPickerItem?) {
         Task {
-            if let data = try? await item?.loadTransferable(type: Data.self) {
-                viewModel.selectedImageData = data
-                if viewModel.newItem == nil {
-                    let id = UUID()
-                    let src = await viewModel.addImageToLocal(id.uuidString + ".jpg")
-                    title = title.isEmpty ? id.uuidString : title
-                    viewModel.newItem = MediaItem(title: title, desc: nil, fileSrc: src, createDate: Date(), type: .picture)
-                }
-            }
+            guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+            viewModel.selectedImageData = data
+            await viewModel.createNewItem(title, desc)
         }
     }
 }

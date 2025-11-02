@@ -32,7 +32,7 @@ final class AppCoordinator {
         case .itemList:
             MediaItemListView(viewModel: container.makeMediaItemViewModel())
         case let .itemDetail(item):
-            MediaItemDetailView(item: item, viewModel: container.makeMediaItemDetailViewModel(item))
+            MediaItemDetailView(viewModel: container.makeMediaItemDetailViewModel(item))
         }
     }
 

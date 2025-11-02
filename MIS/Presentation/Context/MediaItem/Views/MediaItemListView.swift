@@ -37,7 +37,7 @@ struct MediaItemListView: View {
             }
         }
         .applyGlobalBackground()
-        .modifier(NavigationBarTitleColorModifier(color: .accent))
+        .modifier(NavigationBarTitleColorModifier(color: .accentColor))
         .navigationTitle(MediaItemLK.NAV_TITLE.localized)
         .toolbar {
             UIComponentFactory.createAddButton(action: {
@@ -63,7 +63,7 @@ struct MediaItemListView: View {
     @State private var showingOptions = false
 
     @ViewBuilder
-    private func itemRow(_ item: MediaItem) -> some View {
+    private func itemRow(_ item: MediaItemDTO) -> some View {
         ZStack {
             Color.card
             HStack(alignment: .center, spacing: 12) {

@@ -9,5 +9,5 @@ import Foundation
 
 enum Route: Hashable {
     case itemList
-    case itemDetail(MediaItem)
+    case itemDetail(MediaItemDTO)
 }

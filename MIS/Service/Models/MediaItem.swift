@@ -11,7 +11,7 @@ import SwiftData
 // MARK: - MediaItem -
 
 @Model
-final class MediaItem: Identifiable, Sendable {
+final class MediaItem: Identifiable {
     // MARK: - Lifecycle
 
     init(uuid: UUID = UUID(),
@@ -29,14 +29,24 @@ final class MediaItem: Identifiable, Sendable {
     }
 
     // MARK: - Internal
-
-    @Attribute(.unique) var uuid: UUID
-
+    var uuid: UUID
     var title: String
     var desc: String?
     var fileSrc: String
     var createDate: Date
     var type: MediaType
+
+    static func from(dto: MediaItemDTO, in context: ModelContext) -> MediaItem {
+        let item = MediaItem(
+            title: dto.title,
+            desc: dto.desc,
+            fileSrc: dto.fileSrc,
+            createDate: dto.createDate,
+            type: dto.type
+        )
+        context.insert(item)
+        return item
+    }
 }
 
 // MARK: - MediaType -

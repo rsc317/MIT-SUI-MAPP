@@ -10,25 +10,24 @@ import SwiftUI
 struct MediaItemDetailView: View {
     // MARK: - Internal
 
-    @State var item: MediaItem
     @State var viewModel: MediaItemDetailViewModel
     
     var body: some View {
         VStack(spacing: 16) {
-            rowImage(item.fileSrc)
+            rowImage(viewModel.item.fileSrc)
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .foregroundStyle(.accent)
         }
-        .navigationTitle(item.title)
+        .navigationTitle(viewModel.item.title)
         .toolbarTitleDisplayMode(.inline)
-        .modifier(NavigationBarTitleColorModifier(color: .accent))
+        .modifier(NavigationBarTitleColorModifier(color: .accentColor))
         .toolbar {
             ToolbarItem(placement: .destructiveAction) {
                 Button(role: .destructive, action: {
                     Task {
-                        await viewModel.deleteItem(item)
+                        await viewModel.deleteItem()
                         coordinator.pop()
                     }
                 }) {

@@ -15,7 +15,7 @@ import SwiftData
 final class MediaItemDetailViewModel {
     // MARK: - Lifecycle
 
-    init(_ item: MediaItem, _ repository: MediaItemRepositoryProtocol) {
+    init(_ item: MediaItemDTO, _ repository: MediaItemRepositoryProtocol) {
         self.repository = repository
         self.item = item
     }
@@ -23,11 +23,11 @@ final class MediaItemDetailViewModel {
     // MARK: - Internal
 
     var error: MediaItemError?
-    var item: MediaItem
+    var item: MediaItemDTO
 
-    func deleteItem(_ item: MediaItem) async {
+    func deleteItem() async {
         do {
-            try await repository.delete(item)
+            try await repository.delete(byUUID: item.id)
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
