@@ -35,8 +35,8 @@ struct MediaItemAddOrEditView: View {
                             .submitLabel(.next)
                             .onSubmit { focusedField = .desc }
                             .overlay(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(titleError != nil ? Color.red : Color.clear, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(titleError != nil ? .error : Color.clear, lineWidth: 2)
                             )
                         }
                         PhotosPicker(
@@ -45,13 +45,19 @@ struct MediaItemAddOrEditView: View {
                             photoLibrary: .shared()
                         ) {
                             Image(systemName: "photo.on.rectangle")
+                                .foregroundStyle(imageError != nil ? .error : .buttonPrimary)
                         }
                         .onChange(of: selectedItem) { _, newItem in
                             prepareMediaItem(newItem)
                         }
                     }
-                    buildErrorView()
 
+                    if let titleError {
+                        Text(titleError)
+                            .font(.caption)
+                            .foregroundColor(.error)
+                    }
+                    
                     ZStack {
                         if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
                             Image(uiImage: uiImage)
@@ -63,6 +69,17 @@ struct MediaItemAddOrEditView: View {
                                 .frame(height: 200)
                         }
                     }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(imageError != nil ? .error : Color.clear, lineWidth: 2)
+                    )
+
+                    if let imageError {
+                        Text(imageError)
+                            .font(.caption)
+                            .foregroundColor(.error)
+                    }
+                    
                 }
                 .padding()
                 .cornerRadius(12)
@@ -102,7 +119,7 @@ struct MediaItemAddOrEditView: View {
                                 guard titleError == nil, imageError == nil else {
                                     return
                                 }
-                                
+
                                 if isEditMode {
                                     viewModel.selectedItem?.title = title
                                     viewModel.selectedItem?.desc = desc
@@ -172,22 +189,6 @@ struct MediaItemAddOrEditView: View {
 
         if viewModel.selectedImageData == nil {
             imageError = "Bitte wähle ein Bild aus."
-        }
-    }
-
-    private func buildErrorView() -> some View {
-        VStack {
-            if let titleError {
-                Text(titleError)
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
-
-            if let imageError {
-                Text(imageError)
-                    .font(.caption)
-                    .foregroundColor(.red)
-            }
         }
     }
 }
