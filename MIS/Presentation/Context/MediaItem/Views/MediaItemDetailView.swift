@@ -10,7 +10,7 @@ import SwiftUI
 struct MediaItemDetailView: View {
     // MARK: - Internal
 
-    @State var item: MediaItemDataForm
+    @State var item: MediaItem
     @State var viewModel: MediaItemDetailViewModel
     
     var body: some View {

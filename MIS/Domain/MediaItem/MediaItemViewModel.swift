@@ -21,27 +21,26 @@ final class MediaItemViewModel {
 
     // MARK: - Internal
 
-    var items = [MediaItemDataForm]()
-    var selectedItem: MediaItemDataForm?
-    var newItem: MediaItemDataForm?
+    var items = [MediaItem]()
+    var selectedItem: MediaItem?
+    var newItem: MediaItem?
     var selectedImageData: Data?
     var error: MediaItemError?
 
     func loadItems() {
         Task {
             do {
-                let fetched = try await repository.fetchAll()
-                self.items = fetched.map { self.mapModelToDataForm($0) }
+                self.items = try await repository.fetchAll()
             } catch let caughtError {
                 self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
             }
         }
     }
 
-    func deleteItem(_ formData: MediaItemDataForm) async {
+    func deleteItem(_ item: MediaItem) async {
         do {
-            try await repository.delete(byUUID: formData.id)
-            items.removeAll { $0.id == formData.id }
+            try await repository.delete(item)
+            items.removeAll { $0.id == item.id }
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
@@ -59,7 +58,6 @@ final class MediaItemViewModel {
 
         do {
             let item = MediaItem(
-                uuid: newItem.id,
                 title: newItem.title,
                 desc: newItem.desc,
                 fileSrc: newItem.fileSrc,
@@ -67,7 +65,7 @@ final class MediaItemViewModel {
                 type: newItem.type
             )
             try await repository.add(item)
-            items.append(newItem)
+            items.append(item)
         } catch let caughtError {
             self.error = MediaItemError.repositoryFailure(caughtError.localizedDescription)
         }
@@ -90,16 +88,12 @@ final class MediaItemViewModel {
         guard let selectedItem else { return }
 
         do {
-            if let model = try await repository.fetch(byUUID: selectedItem.id),
-               let selectedImageData {
-                let src = try repository.saveImageLocally(selectedImageData, with: selectedItem.id.uuidString + ".jpg")
-                model.title = selectedItem.title
-                model.desc = selectedItem.desc
-                model.fileSrc = src
-                model.type = selectedItem.type
-                try await repository.update(model)
+            if let selectedImageData {
+                selectedItem.fileSrc = try repository.saveImageLocally(selectedImageData, with: selectedItem.uuid.uuidString + ".jpg")
+                try await repository.update(selectedItem)
+                
                 if let idx = items.firstIndex(where: { $0.id == selectedItem.id }) {
-                    items[idx] = mapModelToDataForm(model)
+                    items[idx] = selectedItem
                 }
             }
         } catch let caughtError {
@@ -121,15 +115,4 @@ final class MediaItemViewModel {
     // MARK: - Private
 
     private let repository: MediaItemRepositoryProtocol
-
-    private func mapModelToDataForm(_ item: MediaItem) -> MediaItemDataForm {
-        return MediaItemDataForm(
-            id: item.uuid,
-            title: item.title,
-            desc: item.desc,
-            fileSrc: item.fileSrc,
-            createDate: item.createDate,
-            type: item.type
-        )
-    }
 }

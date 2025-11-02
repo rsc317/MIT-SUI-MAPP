@@ -30,17 +30,6 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         try await baseRepository.delete(model)
     }
 
-    func delete(byUUID uuid: UUID) async throws {
-        let descriptor = FetchDescriptor<MediaItem>(
-            predicate: #Predicate { $0.uuid == uuid }
-        )
-
-        if let item = try context.fetch(descriptor).first {
-            context.delete(item)
-            try context.save()
-        }
-    }
-
     func fetch(byUUID uuid: UUID) async throws -> MediaItem? {
         let descriptor = FetchDescriptor<MediaItem>(
             predicate: #Predicate { $0.uuid == uuid }

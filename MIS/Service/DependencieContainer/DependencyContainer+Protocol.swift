@@ -7,5 +7,5 @@
 
 protocol DependencyContainerProtocol {
     func makeMediaItemViewModel() -> MediaItemViewModel
-    func makeMediaItemDetailViewModel(_ item: MediaItemDataForm) -> MediaItemDetailViewModel
+    func makeMediaItemDetailViewModel(_ item: MediaItem) -> MediaItemDetailViewModel
 }

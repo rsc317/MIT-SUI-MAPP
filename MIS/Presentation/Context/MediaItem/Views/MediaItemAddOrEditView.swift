@@ -137,7 +137,7 @@ struct MediaItemAddOrEditView: View {
                     let id = UUID()
                     let src = await viewModel.addImageToLocal(id.uuidString + ".jpg")
                     title = title.isEmpty ? id.uuidString : title
-                    viewModel.newItem = MediaItemDataForm(id: id, title: title, desc: nil, fileSrc: src, createDate: Date(), type: .picture)
+                    viewModel.newItem = MediaItem(title: title, desc: nil, fileSrc: src, createDate: Date(), type: .picture)
                 }
             }
         }

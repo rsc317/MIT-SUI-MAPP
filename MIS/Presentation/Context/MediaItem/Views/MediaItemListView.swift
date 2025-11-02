@@ -63,7 +63,7 @@ struct MediaItemListView: View {
     @State private var showingOptions = false
 
     @ViewBuilder
-    private func itemRow(_ item: MediaItemDataForm) -> some View {
+    private func itemRow(_ item: MediaItem) -> some View {
         ZStack {
             Color.card
             HStack(alignment: .center, spacing: 12) {
@@ -76,7 +76,7 @@ struct MediaItemListView: View {
                     Text(item.title)
                         .font(.headline)
                         .foregroundStyle(.text)
-                    Text(item.formattedDate)
+                    Text(item.createDate.formatted())
                         .font(.subheadline)
                         .foregroundStyle(.text)
                 }

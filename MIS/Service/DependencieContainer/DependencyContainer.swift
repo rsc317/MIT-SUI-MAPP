@@ -13,7 +13,7 @@ final class DependencyContainer: DependencyContainerProtocol {
         return MediaItemViewModel(repository)
     }
 
-    func makeMediaItemDetailViewModel(_ item: MediaItemDataForm) -> MediaItemDetailViewModel {
+    func makeMediaItemDetailViewModel(_ item: MediaItem) -> MediaItemDetailViewModel {
         let repository = MediaItemRepository(persistence: persistence)
         return MediaItemDetailViewModel(item, repository)
     }
