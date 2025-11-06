@@ -19,67 +19,68 @@ struct MediaItemAddOrEditView: View {
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var titleError: String? = nil
     @State private var imageError: String? = nil
+    @State private var showSaveOptions = false
 
     var body: some View {
+        let imageData = viewModel.selectedImageData
+
         NavigationStack {
             Form {
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            UIComponentFactory.createTextfield(
-                                label: MediaItemLK.TITLE,
-                                text: $title,
-                                accessibilityId: MediaItemAID.TITLE
-                            )
-                            .focused($focusedField, equals: .title)
-                            .submitLabel(.next)
-                            .onSubmit { focusedField = .desc }
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(titleError != nil ? .error : Color.clear, lineWidth: 2)
-                            )
-                        }
-                        PhotosPicker(
-                            selection: $selectedItem,
-                            matching: .images,
-                            photoLibrary: .shared()
-                        ) {
-                            Image(systemName: "photo.on.rectangle")
-                                .foregroundStyle(imageError != nil ? .error : .buttonPrimary)
-                        }
-                        .onChange(of: selectedItem) { _, newItem in
-                            prepareMediaItem(newItem)
-                        }
-                    }
+                    UIComponentFactory.createTextfield(
+                        label: MediaItemLK.TITLE,
+                        text: $title,
+                        accessibilityId: MediaItemAID.TITLE
+                    )
+                    .focused($focusedField, equals: .title)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField = .desc }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(titleError != nil ? .error : Color.clear, lineWidth: 2)
+                    )
 
                     if let titleError {
                         Text(titleError)
                             .font(.caption)
                             .foregroundColor(.error)
                     }
-                    
+
                     ZStack {
-                        if let imageData = viewModel.selectedImageData, let uiImage = UIImage(data: imageData) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 200)
-                        } else {
-                            Color.clear
-                                .frame(height: 200)
+                        PhotosPicker(
+                            selection: $selectedItem,
+                            matching: .images,
+                            photoLibrary: .shared()
+                        ) {
+                            if let imageData, let uiImage = UIImage(data: imageData) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(height: 210)
+                                    .frame(maxWidth: .infinity)
+                                    .clipped()
+                            } else {
+                                Image(systemName: "photo.on.rectangle.angled.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .foregroundStyle(imageError != nil ? .error : .accentColor)
+                                    .frame(maxWidth: .infinity, maxHeight: 210)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(imageError != nil ? .error : .accentColor, lineWidth: 1)
+                                    )
+                            }
+                        }
+                        .onChange(of: selectedItem) { _, newItem in
+                            prepareMediaItem(newItem)
                         }
                     }
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(imageError != nil ? .error : Color.clear, lineWidth: 2)
-                    )
 
                     if let imageError {
                         Text(imageError)
                             .font(.caption)
                             .foregroundColor(.error)
                     }
-                    
                 }
                 .padding()
                 .cornerRadius(12)
@@ -113,24 +114,10 @@ struct MediaItemAddOrEditView: View {
                     UIComponentFactory.createToolbarButton(
                         label: GlobalLocalizationKeys.BUTTON_SAVE,
                         action: {
-                            Task {
-                                validateView()
-
-                                guard titleError == nil, imageError == nil else {
-                                    return
-                                }
-
-                                if isEditMode {
-                                    viewModel.selectedItem?.title = title
-                                    viewModel.selectedItem?.desc = desc
-                                    await viewModel.editItem()
-                                } else {
-                                    viewModel.newItem?.title = title
-                                    viewModel.newItem?.desc = desc
-                                    await viewModel.saveItem()
-                                }
-
-                                coordinator.dismissSheet()
+                            if isEditMode {
+                                saveAction()
+                            } else {
+                                showSaveOptions = true
                             }
                         },
                         accessibilityId: MediaItemAID.BUTTON_SAVE
@@ -138,15 +125,7 @@ struct MediaItemAddOrEditView: View {
                 }
             }
             .onAppear {
-                isEditMode = viewModel.selectedItem != nil
-                focusedField = .title
-                title = viewModel.selectedItem?.title ?? ""
-                desc = viewModel.selectedItem?.desc ?? ""
-                if let fileSrc = viewModel.selectedItem?.fileSrc,
-                   let url = viewModel.getImageURL(fileSrc),
-                   let data = try? Data(contentsOf: url) {
-                    viewModel.selectedImageData = data
-                }
+                onAppearAction()
             }
             .onDisappear {
                 viewModel.disappear()
@@ -160,6 +139,16 @@ struct MediaItemAddOrEditView: View {
                 prepareMediaItem(newItem)
                 imageError = nil
             }
+            .confirmationDialog("Wie möchtest du speichern?", isPresented: $showSaveOptions, titleVisibility: .visible) {
+                Button("Lokal speichern") {
+                    saveOnLocalAction()
+                }
+                Button("Auf Server speichern") {
+                    saveOnServerAction()
+                }
+
+                Button("Abbrechen", role: .cancel) {}
+            }
         }
     }
 
@@ -167,15 +156,76 @@ struct MediaItemAddOrEditView: View {
 
     @State private var title = ""
     @State private var desc = ""
+    @State private var saveDestination = SaveDestination.local
+    
     @State private var isEditMode: Bool = false
     @FocusState private var focusedField: Field?
+
+    private func onAppearAction() {
+        isEditMode = viewModel.selectedItem != nil
+        focusedField = .title
+        title = viewModel.selectedItem?.title ?? ""
+        desc = viewModel.selectedItem?.desc ?? ""
+        if let fileSrc = viewModel.selectedItem?.fileSrc,
+           let url = viewModel.getImageURL(fileSrc),
+           let data = try? Data(contentsOf: url) {
+            viewModel.selectedImageData = data
+        }
+    }
+
+    private func saveAction() {
+        let destination: SaveDestination? = viewModel.selectedItem?.saveDestination
+        switch destination {
+        case .remote: saveOnServerAction()
+        case .local: saveOnLocalAction()
+        default: break
+        }
+    }
+
+    private func saveOnServerAction() {
+        Task {
+            validateView()
+            guard titleError == nil, imageError == nil else { return }
+
+            if isEditMode {
+                viewModel.selectedItem?.title = title
+                viewModel.selectedItem?.desc = desc
+                await viewModel.saveSelectedItem()
+            } else {
+                viewModel.newItem?.title = title
+                viewModel.newItem?.desc = desc
+                viewModel.newItem?.saveDestination = .remote
+                await viewModel.saveNewItem()
+            }
+            coordinator.dismissSheet()
+        }
+    }
+
+    private func saveOnLocalAction() {
+        Task {
+            validateView()
+            guard titleError == nil, imageError == nil else { return }
+
+            if isEditMode {
+                viewModel.selectedItem?.title = title
+                viewModel.selectedItem?.desc = desc
+                await viewModel.saveSelectedItem()
+            } else {
+                viewModel.newItem?.title = title
+                viewModel.newItem?.desc = desc
+                viewModel.newItem?.saveDestination = .local
+                await viewModel.saveNewItem()
+            }
+            coordinator.dismissSheet()
+        }
+    }
 
     private func prepareMediaItem(_ item: PhotosPickerItem?) {
         Task {
             guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
 
             viewModel.selectedImageData = data
-            title = await viewModel.createNewItem(title, desc)
+            title = await viewModel.createNewItem(title, desc, saveDestination)
         }
     }
 

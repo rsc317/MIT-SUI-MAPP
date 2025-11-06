@@ -53,7 +53,7 @@ final class MediaItemViewModel {
         self.selectedItem = nil
     }
 
-    func saveItem() async {
+    func saveNewItem() async {
         guard let newItem else { return }
 
         do {
@@ -78,7 +78,7 @@ final class MediaItemViewModel {
         return filename
     }
 
-    func editItem() async {
+    func saveSelectedItem() async {
         guard var selectedItem else { return }
 
         do {
@@ -101,12 +101,12 @@ final class MediaItemViewModel {
         }
     }
     
-    func createNewItem(_ title: String, _ desc: String) async -> String {
+    func createNewItem(_ title: String, _ desc: String, _ saveDestination: SaveDestination) async -> String {
         if newItem == nil {
             let id = UUID()
             let newTitle = title.isEmpty ? id.uuidString : title
             let fileSrc = await addImageToLocal(id.uuidString + ".jpg")
-            self.newItem = MediaItemDTO(id: id, title: newTitle, desc: desc, fileSrc: fileSrc, createDate: Date(), type: .picture)
+            self.newItem = MediaItemDTO(id: id, title: newTitle, desc: desc, fileSrc: fileSrc, createDate: Date(), type: .picture, saveDestination: saveDestination)
         }
         
         return newItem?.title ?? ""

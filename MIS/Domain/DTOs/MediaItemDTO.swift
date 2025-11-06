@@ -13,6 +13,7 @@ struct MediaItemDTO: Identifiable, Sendable, Hashable {
     var fileSrc: String
     var createDate: Date
     var type: MediaType
+    var saveDestination: SaveDestination
 }
 
 extension MediaItemDTO {
@@ -23,5 +24,6 @@ extension MediaItemDTO {
         self.fileSrc = model.fileSrc
         self.createDate = model.createDate
         self.type = model.type
+        self.saveDestination = model.saveDestination
     }
 }

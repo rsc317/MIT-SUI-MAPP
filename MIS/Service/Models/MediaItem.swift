@@ -19,13 +19,15 @@ final class MediaItem: Identifiable {
          desc: String? = nil,
          fileSrc: String,
          createDate: Date = Date(),
-         type: MediaType = .picture) {
+         type: MediaType = .picture,
+         saveDestination: SaveDestination = .local) {
         self.uuid = uuid
         self.title = title
         self.desc = desc
         self.fileSrc = fileSrc
         self.createDate = createDate
         self.type = type
+        self.saveDestination = saveDestination
     }
 
     // MARK: - Internal
@@ -35,14 +37,16 @@ final class MediaItem: Identifiable {
     var fileSrc: String
     var createDate: Date
     var type: MediaType
-
+    let saveDestination: SaveDestination
+    
     static func from(dto: MediaItemDTO, in context: ModelContext) -> MediaItem {
         let item = MediaItem(
             title: dto.title,
             desc: dto.desc,
             fileSrc: dto.fileSrc,
             createDate: dto.createDate,
-            type: dto.type
+            type: dto.type,
+            saveDestination: dto.saveDestination
         )
         context.insert(item)
         return item
@@ -54,4 +58,9 @@ final class MediaItem: Identifiable {
 enum MediaType: String, Codable {
     case picture
     case video
+}
+
+enum SaveDestination: String, Codable {
+    case local
+    case remote
 }

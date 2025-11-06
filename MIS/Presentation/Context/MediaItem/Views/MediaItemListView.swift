@@ -76,9 +76,14 @@ struct MediaItemListView: View {
                     Text(item.title)
                         .font(.headline)
                         .foregroundStyle(.text)
-                    Text(item.createDate.formatted())
-                        .font(.subheadline)
-                        .foregroundStyle(.text)
+                    HStack {
+                        Text(item.createDate.formatted())
+                            .font(.subheadline)
+                            .foregroundStyle(.text)
+                        Text("Location: \(item.saveDestination.rawValue)")
+                            .font(.subheadline)
+                            .foregroundStyle(.text)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
