@@ -28,16 +28,18 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         return models.map { MediaItemDTO(from: $0) }
     }
 
-    func save(toLocalStore: Bool, data: Data, dto: MediaItemDTO) async throws {
-        let item = MediaItem.from(dto: dto, in: context)
+    func save(toLocalStore: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItemDTO {
+        let model = MediaItem(title:title, desc: desc, file: file)
         if toLocalStore {
-            let fileURL = documentsURL.appending(path: item.file.file, directoryHint: .notDirectory)
+            let fileURL = documentsURL.appending(path: model.file.file, directoryHint: .notDirectory)
             try data.write(to: fileURL)
         } else {
-            let dbID = try await service.uploadMedia(data: data, fileURL: item.file.url)
-            item.file.dbID = String(dbID)
+            let dbID = try await service.uploadMedia(data: data, fileURL: model.file.url)
+            model.file.dbID = String(dbID)
         }
+        context.insert(model)
         try context.save()
+        return MediaItemDTO(from: model)
     }
 
     func update(_ dto: MediaItemDTO) throws {

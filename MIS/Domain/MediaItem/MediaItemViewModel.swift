@@ -80,12 +80,18 @@ final class MediaItemViewModel {
         await deleteItem(currentItem)
         self.currentItem = nil
     }
-
+/**
+ init(uuid: UUID = UUID(),
+      title: String,
+      desc: String? = nil,
+      createDate: Date,
+      file: String,
+      dbID: String? = nil)
+ */
     func saveNewItem(_ local: Bool = true) async {
         do {
             guard let data = selectedImageData else { return }
-            let item = MediaItemDTO(id: UUID(), dbID: nil, createDate: Date(), location: .local, title: title, desc: desc, file: file)
-            try await repository.save(toLocalStore: local, data: data, dto: item)
+            let item = try await repository.save(toLocalStore: local, data: data, title: title, desc: desc, file: file)
             items.append(item)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)

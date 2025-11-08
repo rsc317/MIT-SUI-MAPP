@@ -10,10 +10,9 @@ import Foundation
 
 struct MediaItemDTO: Identifiable, Sendable, Hashable {
     let id: UUID
-    let dbID: String?
     let createDate: Date
     let location: FileLocation
-
+    var dbID: String?
     var title: String
     var desc: String?
     var file: String

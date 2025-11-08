@@ -11,7 +11,7 @@ import SwiftData
 protocol MediaItemRepositoryProtocol {
     func fetchAll() async throws -> [MediaItemDTO]
     func fetch(byUUID id: UUID) throws -> MediaItem?
-    func save(toLocalStore: Bool, data: Data, dto: MediaItemDTO) async throws
+    func save(toLocalStore: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItemDTO
     func update(_ dto: MediaItemDTO) throws
     func delete(byUUID id: UUID) async throws
     func getExternImage(dbID: String) throws -> Data?

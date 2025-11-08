@@ -17,7 +17,7 @@ final class MediaItem: Identifiable {
     init(uuid: UUID = UUID(),
          title: String,
          desc: String? = nil,
-         createDate: Date,
+         createDate: Date = Date(),
          file: String,
          dbID: String? = nil) {
         self.uuid = uuid
