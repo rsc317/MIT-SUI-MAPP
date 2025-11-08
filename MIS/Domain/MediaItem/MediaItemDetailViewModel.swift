@@ -33,10 +33,13 @@ final class MediaItemDetailViewModel {
         }
     }
 
-    func getImageURL(_ fileSrc: String?) -> URL? {
-        guard let fileSrc else { return nil }
-
-        return repository.getImageURL(for: fileSrc)
+    func getImage() -> Data? {
+        do {
+            return item.isFileOnLocalStorage ? try repository.getLocalImage(fileName: item.file) : nil
+        } catch {
+            return nil
+        }
+        
     }
 
     // MARK: - Private

@@ -13,8 +13,9 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
     // MARK: - Init
 
-    init(persistence: PersistenceController) {
+    init(persistence: PersistenceController, service: MediaServiceProtocol = MediaService.shared) {
         context = persistence.context
+        self.service = service
     }
 
     // MARK: - Internal
@@ -27,56 +28,70 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         return models.map { MediaItemDTO(from: $0) }
     }
 
-    func fetch(byId id: PersistentIdentifier) async throws -> MediaItemDTO? {
-        let descriptor = FetchDescriptor<MediaItem>(predicate: #Predicate { $0.id == id })
-        return try context.fetch(descriptor)
-            .first
-            .map { MediaItemDTO(from: $0) }
-    }
-
-    func add(_ dto: MediaItemDTO) async throws {
+    func save(_ dto: MediaItemDTO) async throws {
         _ = MediaItem.from(dto: dto, in: context)
         try context.save()
     }
 
-    func update(_ dto: MediaItemDTO) async throws {
-        guard let item = try await fetch(byUUID: dto.id) else { return }
-
+    func update(_ dto: MediaItemDTO) throws {
+        guard let item = try fetch(byUUID: dto.id) else { return }
         item.title = dto.title
         item.desc = dto.desc
-        item.fileSrc = dto.fileSrc
-        item.createDate = dto.createDate
-        item.type = dto.type
+        item.file = MediaFile(dto.dbID, dto.file)
+
         try context.save()
     }
 
     func delete(byUUID id: UUID) async throws {
-        guard let item = try await fetch(byUUID: id) else { return }
+        guard let item = try fetch(byUUID: id) else { return }
 
         context.delete(item)
         try context.save()
     }
 
-    func saveImageLocally(_ data: Data, with fileName: String) throws -> String {
+    func saveImageExtern(data: Data, fileName: String) async throws -> String {
+        ""
+    }
+
+    func getExternImage(dbID: String) throws -> Data? {
+        nil
+    }
+
+    func updateImageExtern(data: Data, dbID: String) throws {}
+
+    func deleteImageExtern(dbID: String) async throws {}
+
+    func saveImageLocal(data: Data, fileName: String) throws {
         let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
         try data.write(to: fileURL)
-        return fileName
     }
 
-    func getImageURL(for fileName: String) -> URL {
-        documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+    func getLocalImage(fileName: String) -> Data? {
+        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+        return try? Data(contentsOf: fileURL)
     }
 
-    // MARK: - Private
+    func updateImageLocal(data: Data, fileName: String) throws {
+        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+        try data.write(to: fileURL, options: .atomic)
+    }
 
-    private let context: ModelContext
-    private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    func deleteImageLocal(fileName: String) async throws {
+        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+        try FileManager.default.removeItem(at: fileURL)
+    }
 
-    private func fetch(byUUID id: UUID) async throws -> MediaItem? {
+    func fetch(byUUID id: UUID) throws -> MediaItem? {
         let descriptor = FetchDescriptor<MediaItem>(
             predicate: #Predicate { $0.uuid == id }
         )
 
         return try context.fetch(descriptor).first
     }
+
+    // MARK: - Private
+
+    private let context: ModelContext
+    private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    private let service: MediaServiceProtocol
 }

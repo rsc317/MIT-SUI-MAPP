@@ -17,50 +17,33 @@ final class MediaItem: Identifiable {
     init(uuid: UUID = UUID(),
          title: String,
          desc: String? = nil,
-         fileSrc: String,
-         createDate: Date = Date(),
-         type: MediaType = .picture,
-         saveDestination: SaveDestination = .local) {
+         createDate: Date,
+         file: String,
+         dbID: String? = nil) {
         self.uuid = uuid
         self.title = title
         self.desc = desc
-        self.fileSrc = fileSrc
         self.createDate = createDate
-        self.type = type
-        self.saveDestination = saveDestination
+        self.file = MediaFile(dbID, file)
     }
 
     // MARK: - Internal
+
     var uuid: UUID
     var title: String
     var desc: String?
-    var fileSrc: String
     var createDate: Date
-    var type: MediaType
-    let saveDestination: SaveDestination
-    
+    var file: MediaFile
+
     static func from(dto: MediaItemDTO, in context: ModelContext) -> MediaItem {
         let item = MediaItem(
             title: dto.title,
             desc: dto.desc,
-            fileSrc: dto.fileSrc,
             createDate: dto.createDate,
-            type: dto.type,
-            saveDestination: dto.saveDestination
+            file: dto.file,
+            dbID: dto.dbID
         )
         context.insert(item)
         return item
     }
-}
-
-// MARK: - MediaType -
-
-enum MediaType: String, Codable {
-    case picture
-    case video
-}
-
-enum SaveDestination: String, Codable {
-    case local
-    case remote
 }

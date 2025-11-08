@@ -11,10 +11,10 @@ struct MediaItemDetailView: View {
     // MARK: - Internal
 
     @State var viewModel: MediaItemDetailViewModel
-    
+
     var body: some View {
         VStack(spacing: 16) {
-            rowImage(viewModel.item.fileSrc)
+            rowImage()
                 .resizable()
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -44,15 +44,12 @@ struct MediaItemDetailView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
 
-    private func rowImage(_ fileScr: String?) -> Image {
-        guard let fileUrl = viewModel.getImageURL(fileScr) else {
+    private func rowImage() -> Image {
+        guard let data = viewModel.getImage(),
+              let uiImage = UIImage(data: data) else {
             return Image(systemName: "photo")
         }
 
-        if let uiImage = UIImage(contentsOfFile: fileUrl.path) {
-            return Image(uiImage: uiImage)
-        }
-
-        return Image(systemName: "photo")
+        return Image(uiImage: uiImage)
     }
 }

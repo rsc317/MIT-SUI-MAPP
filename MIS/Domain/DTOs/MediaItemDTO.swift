@@ -6,24 +6,31 @@
 //
 import Foundation
 
+// MARK: - MediaItemDTO -
+
 struct MediaItemDTO: Identifiable, Sendable, Hashable {
-    var id: UUID
+    let id: UUID
+    let dbID: String?
+    let createDate: Date
+    let location: FileLocation
+
     var title: String
     var desc: String?
-    var fileSrc: String
-    var createDate: Date
-    var type: MediaType
-    var saveDestination: SaveDestination
+    var file: String
+
+    var isFileOnLocalStorage: Bool {
+        location == .local
+    }
 }
 
 extension MediaItemDTO {
     init(from model: MediaItem) {
-        self.id = model.uuid
-        self.title = model.title
-        self.desc = model.desc
-        self.fileSrc = model.fileSrc
-        self.createDate = model.createDate
-        self.type = model.type
-        self.saveDestination = model.saveDestination
+        id = model.uuid
+        dbID = model.file.dbID
+        createDate = model.createDate
+        location = model.file.location
+        title = model.title
+        desc = model.desc
+        file = model.file.file
     }
 }

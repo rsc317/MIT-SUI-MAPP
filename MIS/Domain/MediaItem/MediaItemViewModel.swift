@@ -13,6 +13,8 @@ import SwiftData
 @MainActor
 @Observable
 final class MediaItemViewModel {
+    // MARK: - Lifecycle
+
     // MARK: - Init
 
     init(_ repository: MediaItemRepositoryProtocol) {
@@ -22,10 +24,36 @@ final class MediaItemViewModel {
     // MARK: - Internal
 
     var items = [MediaItemDTO]()
-    var selectedItem: MediaItemDTO?
-    var newItem: MediaItemDTO?
-    var selectedImageData: Data?
     var error: MediaItemError?
+
+    var currentItem: MediaItemDTO?
+    var selectedImageData: Data?
+    var title = ""
+    var file = ""
+    var desc = ""
+
+    func onAppearAction() {
+        do {
+            if let item = currentItem {
+                title = item.title
+                desc = item.desc ?? ""
+                file = item.file
+                if item.isFileOnLocalStorage {
+                    selectedImageData = try repository.getLocalImage(fileName: item.file)
+                } else if let id = item.dbID {
+                    selectedImageData = try repository.getExternImage(dbID: id)
+                }
+            }
+        } catch {}
+    }
+
+    func onDisappearAction() {
+        error = nil
+        currentItem = nil
+        selectedImageData = nil
+        title = ""
+        file = ""
+    }
 
     func loadItems() {
         Task {
@@ -46,82 +74,92 @@ final class MediaItemViewModel {
         }
     }
 
-    func deleteSelectedItem() async {
-        guard let selectedItem else { return }
+    func deleteCurrentItem() async {
+        guard let currentItem else { return }
 
-        await deleteItem(selectedItem)
-        self.selectedItem = nil
+        await deleteItem(currentItem)
+        await deleteImage(item: currentItem)
+        self.currentItem = nil
     }
 
-    func saveNewItem() async {
-        guard let newItem else { return }
-
+    func saveNewItem(_ local: Bool = true) async {
         do {
-            try await repository.add(newItem)
-            items.append(newItem)
+            guard let data = selectedImageData else { return }
+
+            if local {
+                try await repository.saveImageLocal(data: data, fileName: file)
+            }
+
+            let item = MediaItemDTO(id: UUID(), dbID: nil, createDate: Date(), location: .local, title: title, desc: desc, file: file)
+            try await repository.save(item)
+            items.append(item)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
     }
 
-    func addImageToLocal(_ name: String) async -> String {
-        var filename = "defaultPicture"
-
+    func updateItem() {
         do {
-            if let selectedImageData {
-                filename = try repository.saveImageLocally(selectedImageData, with: name)
+            self.currentItem?.title = title
+            self.currentItem?.desc = desc
+            guard let currentItem, let selectedImageData else { return }
+            
+            if currentItem.isFileOnLocalStorage {
+                try repository.updateImageLocal(data: selectedImageData, fileName: file)
+            } else if let id = currentItem.dbID {
+                try repository.updateImageExtern(data: selectedImageData, dbID: id)
+            }
+
+            try repository.update(currentItem)
+            if let idx = items.firstIndex(where: { $0.id == currentItem.id }) {
+                items[idx] = currentItem
             }
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
-
-        return filename
     }
 
-    func saveSelectedItem() async {
-        guard var selectedItem else { return }
-
+    func getImageData(for item: MediaItemDTO) -> Data? {
         do {
-            if let selectedImageData {
-                selectedItem.fileSrc = try repository.saveImageLocally(
-                    selectedImageData,
-                    with: UUID().uuidString + ".jpg"
-                )
+            if item.isFileOnLocalStorage {
+                return try repository.getLocalImage(fileName: item.file)
+            } else if let id = item.dbID {
+                return try repository.getExternImage(dbID: id)
             }
-
-            try await repository.update(selectedItem)
-
-            if let index = items.firstIndex(where: { $0.id == selectedItem.id }) {
-                items[index] = selectedItem
-            }
-
-            self.selectedItem = selectedItem
+            return nil
         } catch {
-            self.error = .repositoryFailure(error.localizedDescription)
+            return nil
         }
-    }
-    
-    func createNewItem(_ title: String, _ desc: String, _ saveDestination: SaveDestination) async -> String {
-        if newItem == nil {
-            let id = UUID()
-            let newTitle = title.isEmpty ? id.uuidString : title
-            let fileSrc = await addImageToLocal(id.uuidString + ".jpg")
-            self.newItem = MediaItemDTO(id: id, title: newTitle, desc: desc, fileSrc: fileSrc, createDate: Date(), type: .picture, saveDestination: saveDestination)
-        }
-        
-        return newItem?.title ?? ""
-    }
-    
-    func disappear() {
-        selectedItem = nil
-        newItem = nil
-        selectedImageData = nil
-        error = nil
     }
 
-    func getImageURL(_ fileSrc: String?) -> URL? {
-        guard let fileSrc else { return nil }
-        return repository.getImageURL(for: fileSrc)
+    func updateImage(_ data: Data, item: MediaItemDTO) {
+        do {
+            if item.isFileOnLocalStorage {
+                try repository.updateImageLocal(data: data, fileName: item.file)
+            } else if let id = item.dbID {
+                try repository.updateImageExtern(data: data, dbID: id)
+            }
+        } catch {}
+    }
+
+    func deleteImage(item: MediaItemDTO) async {
+        do {
+            if item.isFileOnLocalStorage {
+                try await repository.deleteImageLocal(fileName: item.file)
+            } else if let id = item.dbID {
+                try await repository.deleteImageExtern(dbID: id)
+            }
+        } catch {}
+    }
+
+    func prepareMediaItem(_ data: Data?, _ ext: String) {
+        Task {
+            guard let data else { return }
+
+            selectedImageData = data
+            title.isEmpty ? title = "media_\(UUID().uuidString.prefix(8))" : ()
+            file.isEmpty ? file = "\(title).\(ext)" : ()
+        }
     }
 
     // MARK: - Private

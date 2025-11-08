@@ -27,7 +27,7 @@ struct MediaItemListView: View {
                         }, accessibilityId: MediaItemAID.BUTTON_DELETE)
 
                         Button {
-                            viewModel.selectedItem = item
+                            viewModel.currentItem = item
                             showingOptions = true
                         } label: {
                             Image(systemName: "ellipsis")
@@ -45,10 +45,10 @@ struct MediaItemListView: View {
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
         .task { viewModel.loadItems() }
-        .confirmationDialog(viewModel.selectedItem?.title ?? "Unbekannt", isPresented: $showingOptions, titleVisibility: .visible) {
+        .confirmationDialog(viewModel.currentItem?.title ?? "Unbekannt", isPresented: $showingOptions, titleVisibility: .visible) {
             Button(GlobalLocalizationKeys.BUTTON_DELETE.localized, role: .destructive) {
                 Task {
-                    await viewModel.deleteSelectedItem()
+                    await viewModel.deleteCurrentItem()
                 }
             }
             Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {
@@ -67,7 +67,7 @@ struct MediaItemListView: View {
         ZStack {
             Color.card
             HStack(alignment: .center, spacing: 12) {
-                rowImage(item.fileSrc)
+                rowImage(item)
                     .resizable()
                     .scaledToFill()
                     .frame(width: 60, height: 60)
@@ -80,7 +80,7 @@ struct MediaItemListView: View {
                         Text(item.createDate.formatted())
                             .font(.subheadline)
                             .foregroundStyle(.text)
-                        Text("Location: \(item.saveDestination.rawValue)")
+                        Text("Location: \(item.location.rawValue)")
                             .font(.subheadline)
                             .foregroundStyle(.text)
                     }
@@ -92,20 +92,12 @@ struct MediaItemListView: View {
         .listRowInsets(EdgeInsets())
     }
 
-    private func rowImage(_ fileSrc: String?) -> Image {
-        guard let url = viewModel.getImageURL(fileSrc) else {
-            return Image(systemName: "photo")
+    private func rowImage(_ item: MediaItemDTO) -> Image {
+        guard let data = viewModel.getImageData(for: item),
+              let uiImage = UIImage(data: data) else {
+            return Image(systemName: "defaultPicture")
         }
 
-        let assetName = url.lastPathComponent
-        if UIImage(named: assetName) != nil {
-            return Image(assetName)
-        }
-        
-        if let uiImage = UIImage(contentsOfFile: url.path) {
-            return Image(uiImage: uiImage)
-        }
-        
-        return Image(systemName: "photo")
+        return Image(uiImage: uiImage)
     }
 }
