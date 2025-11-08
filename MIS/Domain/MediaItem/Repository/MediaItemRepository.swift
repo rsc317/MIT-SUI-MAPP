@@ -28,13 +28,21 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         return models.map { MediaItemDTO(from: $0) }
     }
 
-    func save(_ dto: MediaItemDTO) async throws {
-        _ = MediaItem.from(dto: dto, in: context)
+    func save(toLocalStore: Bool, data: Data, dto: MediaItemDTO) async throws {
+        let item = MediaItem.from(dto: dto, in: context)
+        if toLocalStore {
+            let fileURL = documentsURL.appending(path: item.file.file, directoryHint: .notDirectory)
+            try data.write(to: fileURL)
+        } else {
+            let dbID = try await service.uploadMedia(data: data, fileURL: item.file.url)
+            item.file.dbID = String(dbID)
+        }
         try context.save()
     }
 
     func update(_ dto: MediaItemDTO) throws {
         guard let item = try fetch(byUUID: dto.id) else { return }
+
         item.title = dto.title
         item.desc = dto.desc
         item.file = MediaFile(dto.dbID, dto.file)
@@ -45,40 +53,25 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
     func delete(byUUID id: UUID) async throws {
         guard let item = try fetch(byUUID: id) else { return }
 
+        item.file.location == .local ? try await deleteImageLocal(fileName: item.file.file) : try await deleteImageExtern(dbID: item.file.dbID)
         context.delete(item)
         try context.save()
-    }
-
-    func saveImageExtern(data: Data, fileName: String) async throws -> String {
-        ""
     }
 
     func getExternImage(dbID: String) throws -> Data? {
         nil
     }
 
-    func updateImageExtern(data: Data, dbID: String) throws {}
-
-    func deleteImageExtern(dbID: String) async throws {}
-
-    func saveImageLocal(data: Data, fileName: String) throws {
-        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
-        try data.write(to: fileURL)
-    }
-
-    func getLocalImage(fileName: String) -> Data? {
-        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+    func getLocalImage(file: String) -> Data? {
+        let fileURL = documentsURL.appending(path: file, directoryHint: .notDirectory)
         return try? Data(contentsOf: fileURL)
     }
 
-    func updateImageLocal(data: Data, fileName: String) throws {
-        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
-        try data.write(to: fileURL, options: .atomic)
-    }
+    func updateImageExtern(data: Data, dbID: String) throws {}
 
-    func deleteImageLocal(fileName: String) async throws {
-        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
-        try FileManager.default.removeItem(at: fileURL)
+    func updateImageLocal(data: Data, file: String) throws {
+        let fileURL = documentsURL.appending(path: file, directoryHint: .notDirectory)
+        try data.write(to: fileURL, options: .atomic)
     }
 
     func fetch(byUUID id: UUID) throws -> MediaItem? {
@@ -94,4 +87,11 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
     private let context: ModelContext
     private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
     private let service: MediaServiceProtocol
+
+    private func deleteImageExtern(dbID: String?) async throws {}
+
+    private func deleteImageLocal(fileName: String) async throws {
+        let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)
+        try FileManager.default.removeItem(at: fileURL)
+    }
 }

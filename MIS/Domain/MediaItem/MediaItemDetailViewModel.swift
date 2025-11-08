@@ -35,7 +35,7 @@ final class MediaItemDetailViewModel {
 
     func getImage() -> Data? {
         do {
-            return item.isFileOnLocalStorage ? try repository.getLocalImage(fileName: item.file) : nil
+            return item.isFileOnLocalStorage ? try repository.getLocalImage(file: item.file) : nil
         } catch {
             return nil
         }

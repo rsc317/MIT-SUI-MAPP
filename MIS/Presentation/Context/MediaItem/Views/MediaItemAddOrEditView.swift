@@ -119,7 +119,8 @@ struct MediaItemAddOrEditView: View {
                                 viewModel.updateItem()
                                 coordinator.dismissSheet()
                             } else {
-                                showSaveOptions = true
+                                validateView()
+                                showSaveOptions = titleError == nil && imageError == nil
                             }
                         },
                         accessibilityId: MediaItemAID.BUTTON_SAVE
@@ -140,12 +141,11 @@ struct MediaItemAddOrEditView: View {
             }
             .confirmationDialog("Wie möchtest du speichern?", isPresented: $showSaveOptions, titleVisibility: .visible) {
                 Button("Lokal speichern") {
-                    saveOnLocalAction()
+                    saveAction()
                 }
                 Button("Auf Server speichern") {
-                    //saveOnServerAction()
+                    saveAction(false)
                 }
-
                 Button("Abbrechen", role: .cancel) {}
             }
         }
@@ -155,32 +155,13 @@ struct MediaItemAddOrEditView: View {
 
     @State private var isEditMode: Bool = false
     @FocusState private var focusedField: Field?
-    
-//
-//    private func saveOnServerAction() {
-//        Task {
-//            validateView()
-//            guard titleError == nil, imageError == nil else { return }
-//
-//            if isEditMode {
-//                viewModel.selectedItem?.title = title
-//                viewModel.selectedItem?.desc = desc
-//                await viewModel.saveSelectedItem()
-//            } else {
-//                viewModel.newItem?.title = title
-//                viewModel.newItem?.desc = desc
-//                viewModel.newItem?.location = .remote
-//                await viewModel.saveNewItem()
-//            }
-//            coordinator.dismissSheet()
-//        }
-//    }
-//
-    private func saveOnLocalAction() {
+
+    private func saveAction(_ local: Bool = true) {
         Task {
             validateView()
             guard titleError == nil, imageError == nil else { return }
-            await viewModel.saveNewItem()
+
+            await viewModel.saveNewItem(local)
             coordinator.dismissSheet()
         }
     }
@@ -188,6 +169,7 @@ struct MediaItemAddOrEditView: View {
     private func prepareMediaItem(_ item: PhotosPickerItem?) {
         Task {
             guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+
             let mime = item?.supportedContentTypes.first?.preferredMIMEType ?? "application/octet-stream"
             let ext = MimeType.getExtension(for: mime)
             viewModel.prepareMediaItem(data, ext)

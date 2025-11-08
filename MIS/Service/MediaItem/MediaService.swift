@@ -1,14 +1,14 @@
 import Foundation
 
 class MediaService: MediaServiceProtocol {
+
     // MARK: - Internal
 
     static let shared = MediaService()
 
-    func uploadMedia(fileURL: URL) async throws -> Int {
+    func uploadMedia(data: Data, fileURL: URL) async throws -> Int {
         let filename = fileURL.lastPathComponent
-        let mimetype = MimeType.from(url: fileURL)
-        let fileData = try Data(contentsOf: fileURL)
+        let mimetype = MimeType.from(url: fileURL).rawValue
 
         var request = URLRequest(url: baseURL.appendingPathComponent("/upload"))
         request.httpMethod = "POST"
@@ -19,8 +19,8 @@ class MediaService: MediaServiceProtocol {
         var body = Data()
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: \(mimetype.rawValue)\r\n\r\n".data(using: .utf8)!)
-        body.append(fileData)
+        body.append("Content-Type: \(mimetype)\r\n\r\n".data(using: .utf8)!)
+        body.append(data)
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
 
         let (data, _) = try await URLSession.shared.upload(for: request, from: body)

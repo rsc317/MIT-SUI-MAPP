@@ -39,7 +39,7 @@ final class MediaItemViewModel {
                 desc = item.desc ?? ""
                 file = item.file
                 if item.isFileOnLocalStorage {
-                    selectedImageData = try repository.getLocalImage(fileName: item.file)
+                    selectedImageData = try repository.getLocalImage(file: item.file)
                 } else if let id = item.dbID {
                     selectedImageData = try repository.getExternImage(dbID: id)
                 }
@@ -78,20 +78,14 @@ final class MediaItemViewModel {
         guard let currentItem else { return }
 
         await deleteItem(currentItem)
-        await deleteImage(item: currentItem)
         self.currentItem = nil
     }
 
     func saveNewItem(_ local: Bool = true) async {
         do {
             guard let data = selectedImageData else { return }
-
-            if local {
-                try await repository.saveImageLocal(data: data, fileName: file)
-            }
-
             let item = MediaItemDTO(id: UUID(), dbID: nil, createDate: Date(), location: .local, title: title, desc: desc, file: file)
-            try await repository.save(item)
+            try await repository.save(toLocalStore: local, data: data, dto: item)
             items.append(item)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
@@ -103,9 +97,9 @@ final class MediaItemViewModel {
             self.currentItem?.title = title
             self.currentItem?.desc = desc
             guard let currentItem, let selectedImageData else { return }
-            
+
             if currentItem.isFileOnLocalStorage {
-                try repository.updateImageLocal(data: selectedImageData, fileName: file)
+                try repository.updateImageLocal(data: selectedImageData, file: file)
             } else if let id = currentItem.dbID {
                 try repository.updateImageExtern(data: selectedImageData, dbID: id)
             }
@@ -122,7 +116,7 @@ final class MediaItemViewModel {
     func getImageData(for item: MediaItemDTO) -> Data? {
         do {
             if item.isFileOnLocalStorage {
-                return try repository.getLocalImage(fileName: item.file)
+                return try repository.getLocalImage(file: item.file)
             } else if let id = item.dbID {
                 return try repository.getExternImage(dbID: id)
             }
@@ -135,19 +129,9 @@ final class MediaItemViewModel {
     func updateImage(_ data: Data, item: MediaItemDTO) {
         do {
             if item.isFileOnLocalStorage {
-                try repository.updateImageLocal(data: data, fileName: item.file)
+                try repository.updateImageLocal(data: data, file: item.file)
             } else if let id = item.dbID {
                 try repository.updateImageExtern(data: data, dbID: id)
-            }
-        } catch {}
-    }
-
-    func deleteImage(item: MediaItemDTO) async {
-        do {
-            if item.isFileOnLocalStorage {
-                try await repository.deleteImageLocal(fileName: item.file)
-            } else if let id = item.dbID {
-                try await repository.deleteImageExtern(dbID: id)
             }
         } catch {}
     }
