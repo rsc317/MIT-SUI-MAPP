@@ -93,6 +93,8 @@ final class MediaItemViewModel {
         do {
             self.currentItem?.title = title
             self.currentItem?.desc = desc
+            self.currentItem?.imageUpdateToken = UUID()
+
             guard let currentItem, let selectedImageData else { return }
 
             try repository.update(currentItem, data: selectedImageData)

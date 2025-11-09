@@ -16,6 +16,7 @@ struct MediaItemDTO: Identifiable, Sendable, Hashable {
     var title: String
     var desc: String?
     var file: String
+    var imageUpdateToken: UUID = UUID()
 
     var isFileOnLocalStorage: Bool {
         location == .local

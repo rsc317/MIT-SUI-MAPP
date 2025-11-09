@@ -48,22 +48,18 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
     func update(_ dto: MediaItemDTO, data: Data) throws {
         guard let model = try fetch(byUUID: dto.id) else { return }
-
         model.title = dto.title
         model.desc = dto.desc
         model.file = MediaFile(dto.dbID, dto.file)
 
         Task {
-            var cachKey = model.file.file
             if dto.isFileOnLocalStorage {
                 try updateImageLocal(data: data, file: model.file.file)
             } else if let id = dto.dbID {
-                cachKey = id
                 try await updateImageExtern(data: data, dbID: id, fileURL: model.file.url)
             }
-            ImageMemoryCache.shared.set(data, for: cachKey)
         }
-        
+
         try context.save()
     }
 
@@ -75,15 +71,6 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         try context.save()
     }
 
-//    func getImage(_ dto: MediaItemDTO) async throws -> Data? {
-//        if dto.isFileOnLocalStorage {
-//            let fileURL = documentsURL.appending(path: dto.file, directoryHint: .notDirectory)
-//            return try? Data(contentsOf: fileURL)
-//        } else {
-//            guard let dbID = dto.dbID, let id = Int(dbID) else { return nil }
-//            return try await service.downloadMedia(id: id)
-//        }
-//    }
     func getImage(_ dto: MediaItemDTO) async throws -> Data? {
         let cacheKey = dto.isFileOnLocalStorage ? dto.file : (dto.dbID ?? "")
         if let cached = ImageMemoryCache.shared.get(for: cacheKey) {
@@ -95,6 +82,7 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
             data = try? Data(contentsOf: fileURL)
         } else {
             guard let dbID = dto.dbID, let id = Int(dbID) else { return nil }
+
             data = try await service.downloadMedia(id: id)
         }
         if let data {
@@ -103,7 +91,13 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         return data
     }
 
-    func fetch(byUUID id: UUID) throws -> MediaItem? {
+    // MARK: - Private
+
+    private let context: ModelContext
+    private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    private let service: MediaServiceProtocol
+
+    private func fetch(byUUID id: UUID) throws -> MediaItem? {
         let descriptor = FetchDescriptor<MediaItem>(
             predicate: #Predicate { $0.uuid == id }
         )
@@ -111,20 +105,16 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         return try context.fetch(descriptor).first
     }
 
-    // MARK: - Private
-
-    private let context: ModelContext
-    private let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    private let service: MediaServiceProtocol
-
     private func updateImageExtern(data: Data, dbID: String, fileURL: URL) async throws {
         guard let id = Int(dbID) else { return }
 
+        ImageMemoryCache.shared.set(data, for: dbID)
         try await service.updateMedia(mediaID: id, fileData: data, fileURL: fileURL)
     }
 
     private func updateImageLocal(data: Data, file: String) throws {
         let fileURL = documentsURL.appending(path: file, directoryHint: .notDirectory)
+        ImageMemoryCache.shared.set(data, for: file)
         try data.write(to: fileURL, options: .atomic)
     }
 

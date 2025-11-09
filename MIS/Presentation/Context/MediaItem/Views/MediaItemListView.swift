@@ -101,7 +101,7 @@ struct MediaItemListView: View {
                 .padding()
             }
             .listRowInsets(EdgeInsets())
-            .task {
+            .task(id: item.imageUpdateToken) {
                 await loadImage()
             }
         }
