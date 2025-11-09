@@ -33,18 +33,16 @@ final class MediaItemViewModel {
     var desc = ""
 
     func onAppearAction() {
-        do {
-            if let item = currentItem {
-                title = item.title
-                desc = item.desc ?? ""
-                file = item.file
-                if item.isFileOnLocalStorage {
-                    selectedImageData = try repository.getLocalImage(file: item.file)
-                } else if let id = item.dbID {
-                    selectedImageData = try repository.getExternImage(dbID: id)
+        Task {
+            do {
+                if let item = currentItem {
+                    title = item.title
+                    desc = item.desc ?? ""
+                    file = item.file
+                    selectedImageData = try await repository.getImage(item)
                 }
-            }
-        } catch {}
+            } catch {}
+        }
     }
 
     func onDisappearAction() {
@@ -104,13 +102,7 @@ final class MediaItemViewModel {
             self.currentItem?.desc = desc
             guard let currentItem, let selectedImageData else { return }
 
-            if currentItem.isFileOnLocalStorage {
-                try repository.updateImageLocal(data: selectedImageData, file: file)
-            } else if let id = currentItem.dbID {
-                try repository.updateImageExtern(data: selectedImageData, dbID: id)
-            }
-
-            try repository.update(currentItem)
+            try repository.update(currentItem, data: selectedImageData)
             if let idx = items.firstIndex(where: { $0.id == currentItem.id }) {
                 items[idx] = currentItem
             }
@@ -119,27 +111,12 @@ final class MediaItemViewModel {
         }
     }
 
-    func getImageData(for item: MediaItemDTO) -> Data? {
+    func getImageData(for item: MediaItemDTO) async throws -> Data? {
         do {
-            if item.isFileOnLocalStorage {
-                return try repository.getLocalImage(file: item.file)
-            } else if let id = item.dbID {
-                return try repository.getExternImage(dbID: id)
-            }
-            return nil
+            return try await repository.getImage(item)
         } catch {
             return nil
         }
-    }
-
-    func updateImage(_ data: Data, item: MediaItemDTO) {
-        do {
-            if item.isFileOnLocalStorage {
-                try repository.updateImageLocal(data: data, file: item.file)
-            } else if let id = item.dbID {
-                try repository.updateImageExtern(data: data, dbID: id)
-            }
-        } catch {}
     }
 
     func prepareMediaItem(_ data: Data?, _ ext: String) {

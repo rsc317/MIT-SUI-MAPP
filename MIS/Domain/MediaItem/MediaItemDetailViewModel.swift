@@ -33,9 +33,9 @@ final class MediaItemDetailViewModel {
         }
     }
 
-    func getImage() -> Data? {
+    func getImage() async throws -> Data? {
         do {
-            return item.isFileOnLocalStorage ? try repository.getLocalImage(file: item.file) : nil
+            return try await repository.getImage(item)
         } catch {
             return nil
         }

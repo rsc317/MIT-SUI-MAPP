@@ -7,7 +7,7 @@
 import Foundation
 
 protocol MediaServiceProtocol {
-    func updateMedia(mediaID: Int, fileData: Data, filename: String, mimeType: String) async throws
+    func updateMedia(mediaID: Int, fileData: Data, fileURL: URL) async throws
     func uploadMedia(data: Data, fileURL: URL) async throws -> Int
     func fetchMetadata(for id: Int) async throws -> [String: Any]
     func downloadMedia(id: Int) async throws -> Data

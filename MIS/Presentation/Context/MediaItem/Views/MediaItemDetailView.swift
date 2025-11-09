@@ -2,23 +2,28 @@
 //  MediaItemDetailView.swift
 //  MediaApp
 //
-//  Created by OpenAI on 2025-10-17.
+//  Created by Emircan Duman on 16.10.25.
 //
 
 import SwiftUI
 
 struct MediaItemDetailView: View {
-    // MARK: - Internal
-
     @State var viewModel: MediaItemDetailViewModel
 
     var body: some View {
         VStack(spacing: 16) {
-            rowImage()
-                .resizable()
-                .scaledToFit()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .foregroundStyle(.accent)
+            ZStack {
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                } else {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .foregroundStyle(.accent)
+                }
+            }
         }
         .navigationTitle(viewModel.item.title)
         .toolbarTitleDisplayMode(.inline)
@@ -37,19 +42,23 @@ struct MediaItemDetailView: View {
                 .accessibilityIdentifier(MediaItemAID.BUTTON_DELETE.rawValue)
             }
         }
+        .task {
+            await loadImage()
+        }
         .applyGlobalBackground()
     }
 
-    // MARK: - Private
-
     @Environment(AppCoordinator.self) private var coordinator
+    @State private var image = Image(systemName: "defaultPicture")
+    @State private var isLoading = true
 
-    private func rowImage() -> Image {
-        guard let data = viewModel.getImage(),
-              let uiImage = UIImage(data: data) else {
-            return Image(systemName: "photo")
+    @MainActor
+    private func loadImage() async {
+        defer { isLoading = false }
+
+        if let data = try? await viewModel.getImage(),
+           let uiImage = UIImage(data: data) {
+            image = Image(uiImage: uiImage)
         }
-
-        return Image(uiImage: uiImage)
     }
 }

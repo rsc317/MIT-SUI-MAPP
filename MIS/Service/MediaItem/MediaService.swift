@@ -50,7 +50,10 @@ class MediaService: MediaServiceProtocol {
         return data
     }
 
-    func updateMedia(mediaID: Int, fileData: Data, filename: String, mimeType: String) async throws {
+    func updateMedia(mediaID: Int, fileData: Data, fileURL: URL) async throws {
+        let filename = fileURL.lastPathComponent
+        let mimetype = MimeType.from(url: fileURL).rawValue
+        
         var request = URLRequest(url: baseURL.appendingPathComponent("/media/\(mediaID)"))
         request.httpMethod = "PUT"
 
@@ -60,7 +63,7 @@ class MediaService: MediaServiceProtocol {
         var body = Data()
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
-        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimetype)\r\n\r\n".data(using: .utf8)!)
         body.append(fileData)
         body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
 

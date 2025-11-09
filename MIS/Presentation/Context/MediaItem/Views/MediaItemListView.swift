@@ -11,13 +11,12 @@ struct MediaItemListView: View {
     // MARK: - Internal
 
     @Environment(AppCoordinator.self) private var coordinator
-
     @State var viewModel: MediaItemViewModel
 
     var body: some View {
         List {
             ForEach(viewModel.items, id: \.id) { item in
-                itemRow(item)
+                ItemRowView(item: item, viewModel: viewModel)
                     .onTapGesture {
                         coordinator.push(route: .itemDetail(item))
                     }
@@ -62,42 +61,70 @@ struct MediaItemListView: View {
 
     @State private var showingOptions = false
 
-    @ViewBuilder
-    private func itemRow(_ item: MediaItemDTO) -> some View {
-        ZStack {
-            Color.card
-            HStack(alignment: .center, spacing: 12) {
-                rowImage(item)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 60, height: 60)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(item.title)
-                        .font(.headline)
-                        .foregroundStyle(.text)
-                    HStack {
-                        Text(item.createDate.formatted())
-                            .font(.subheadline)
-                            .foregroundStyle(.text)
-                        Text("Location: \(item.location.rawValue)")
-                            .font(.subheadline)
-                            .foregroundStyle(.text)
+    struct ItemRowView: View {
+        // MARK: - Internal
+
+        let item: MediaItemDTO
+        let viewModel: MediaItemViewModel
+
+        var body: some View {
+            ZStack {
+                Color.card
+                HStack(alignment: .center, spacing: 12) {
+                    ZStack {
+                        if isLoading {
+                            ProgressView()
+                                .scaleEffect(1.5)
+                        } else {
+                            image
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
                     }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(item.title)
+                            .font(.headline)
+                            .foregroundStyle(.text)
+                        HStack {
+                            Text(item.createDate.formatted())
+                                .font(.subheadline)
+                                .foregroundStyle(.text)
+                            Text("Location: \(item.location.rawValue)")
+                                .font(.subheadline)
+                                .foregroundStyle(.text)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
             }
-            .padding()
-        }
-        .listRowInsets(EdgeInsets())
-    }
-
-    private func rowImage(_ item: MediaItemDTO) -> Image {
-        guard let data = viewModel.getImageData(for: item),
-              let uiImage = UIImage(data: data) else {
-            return Image(systemName: "defaultPicture")
+            .listRowInsets(EdgeInsets())
+            .task {
+                await loadImage()
+            }
         }
 
-        return Image(uiImage: uiImage)
+        // MARK: - Private
+
+        @State private var image = Image(systemName: "defaultPicture")
+        @State private var isLoading = true
+
+        @MainActor
+        private func loadImage() async {
+            isLoading = true
+            defer { isLoading = false }
+
+            if let cached = ImageMemoryCache.shared.get(for: item.id.uuidString),
+               let uiImage = UIImage(data: cached) {
+                image = Image(uiImage: uiImage)
+            } else if let data = try? await viewModel.getImageData(for: item),
+                      let uiImage = UIImage(data: data) {
+                ImageMemoryCache.shared.set(data, for: item.id.uuidString)
+                image = Image(uiImage: uiImage)
+            }
+        }
     }
 }
