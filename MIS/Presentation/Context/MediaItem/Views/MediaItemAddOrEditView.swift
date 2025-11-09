@@ -115,12 +115,14 @@ struct MediaItemAddOrEditView: View {
                     UIComponentFactory.createToolbarButton(
                         label: GlobalLocalizationKeys.BUTTON_SAVE,
                         action: {
-                            if isEditMode {
-                                viewModel.updateItem()
-                                coordinator.dismissSheet()
-                            } else {
-                                validateView()
-                                showSaveOptions = titleError == nil && imageError == nil
+                            Task {
+                                if isEditMode {
+                                    await viewModel.updateItem()
+                                    coordinator.dismissSheet()
+                                } else {
+                                    validateView()
+                                    showSaveOptions = titleError == nil && imageError == nil
+                                }
                             }
                         },
                         accessibilityId: MediaItemAID.BUTTON_SAVE
@@ -161,7 +163,7 @@ struct MediaItemAddOrEditView: View {
             validateView()
             guard titleError == nil, imageError == nil else { return }
 
-            await viewModel.saveNewItem(local)
+            await viewModel.saveItem(local)
             coordinator.dismissSheet()
         }
     }

@@ -18,13 +18,13 @@ final class MediaItem: Identifiable {
          title: String,
          desc: String? = nil,
          createDate: Date = Date(),
-         file: String,
-         dbID: String? = nil) {
+         file: String
+    ) {
         self.uuid = uuid
         self.title = title
         self.desc = desc
         self.createDate = createDate
-        self.file = MediaFile(dbID, file)
+        self.file = MediaFile(file: file)
     }
 
     // MARK: - Internal
@@ -34,14 +34,13 @@ final class MediaItem: Identifiable {
     var desc: String?
     var createDate: Date
     var file: MediaFile
-
+    
     static func from(dto: MediaItemDTO, in context: ModelContext) -> MediaItem {
         let item = MediaItem(
             title: dto.title,
             desc: dto.desc,
             createDate: dto.createDate,
-            file: dto.file,
-            dbID: dto.dbID
+            file: dto.file
         )
         context.insert(item)
         return item

@@ -9,9 +9,10 @@ import Foundation
 import SwiftData
 
 protocol MediaItemRepositoryProtocol {
-    func fetchAll() async throws -> [MediaItemDTO]
-    func save(toLocalStore: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItemDTO
-    func update(_ dto: MediaItemDTO, data: Data) throws
+    func fetchAll() async throws -> [MediaItem]
+    func fetch(byUUID id: UUID) async throws -> MediaItem?
+    func save(shouldSaveLocal: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItem
+    func update(byUUID id: UUID, data: Data, title: String, desc: String) async throws
     func delete(byUUID id: UUID) async throws
-    func getImage(_ dto: MediaItemDTO) async throws -> Data?
+    func getImage(_ id: UUID) async throws -> Data?
 }

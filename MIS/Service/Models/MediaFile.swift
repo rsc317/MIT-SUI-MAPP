@@ -5,15 +5,14 @@
 //  Created by Emircan Duman on 08.11.25.
 //
 
-import SwiftData
 import Foundation
+import SwiftData
 
 @Model
 final class MediaFile: Identifiable {
     // MARK: - Lifecycle
 
-    init(_ dbID: String? = nil, _ file: String) {
-        self.dbID = dbID
+    init(file: String) {
         self.file = file
     }
 
@@ -27,7 +26,11 @@ final class MediaFile: Identifiable {
     var exten: String { url.lastPathComponent }
     var type: MimeType { MimeType.from(url: url) }
     var location: FileLocation {
-        guard let dbID = dbID, !dbID.isEmpty else { return .local }
+        guard let dbID, !dbID.isEmpty else { return .local }
+
         return .remote
     }
+
+    var isLocalStorage: Bool { location == .local }
+    var cacheKey: String { isLocalStorage ? file : (dbID ?? "") }
 }

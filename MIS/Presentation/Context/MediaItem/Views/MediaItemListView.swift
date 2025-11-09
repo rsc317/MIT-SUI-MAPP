@@ -42,7 +42,7 @@ struct MediaItemListView: View {
                 coordinator.presentSheet(.addOrEditNewItem(viewModel))
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
-        .task { viewModel.loadItems() }
+        .task { await viewModel.loadItems() }
         .confirmationDialog(viewModel.currentItem?.title ?? "Unbekannt", isPresented: $showingOptions, titleVisibility: .visible) {
             Button(GlobalLocalizationKeys.BUTTON_DELETE.localized, role: .destructive) {
                 Task {
@@ -122,7 +122,7 @@ struct MediaItemListView: View {
         private func loadImage() async {
             isLoading = true
             defer { isLoading = false }
-            if let data = try? await viewModel.getImageData(for: item),
+            if let data = await viewModel.getImageData(for: item),
                let uiImage = UIImage(data: data) {
                 image = Image(uiImage: uiImage)
             }

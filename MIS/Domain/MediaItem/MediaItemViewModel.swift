@@ -39,7 +39,7 @@ final class MediaItemViewModel {
                     title = item.title
                     desc = item.desc ?? ""
                     file = item.file
-                    selectedImageData = try await repository.getImage(item)
+                    selectedImageData = try await repository.getImage(item.id)
                 }
             } catch {}
         }
@@ -53,13 +53,12 @@ final class MediaItemViewModel {
         file = ""
     }
 
-    func loadItems() {
-        Task {
-            do {
-                self.items = try await repository.fetchAll()
-            } catch {
-                self.error = .repositoryFailure(error.localizedDescription)
-            }
+    func loadItems() async {
+        do {
+            let models = try await repository.fetchAll()
+            self.items = models.map { MediaItemDTO(from: $0) }
+        } catch {
+            self.error = .repositoryFailure(error.localizedDescription)
         }
     }
 
@@ -74,22 +73,21 @@ final class MediaItemViewModel {
 
     func deleteCurrentItem() async {
         guard let currentItem else { return }
-
         await deleteItem(currentItem)
         self.currentItem = nil
     }
 
-    func saveNewItem(_ local: Bool = true) async {
+    func saveItem(_ local: Bool = true) async {
         do {
             guard let data = selectedImageData else { return }
-            let item = try await repository.save(toLocalStore: local, data: data, title: title, desc: desc, file: file)
-            items.append(item)
+            let model = try await repository.save(shouldSaveLocal: local, data: data, title: title, desc: desc, file: file)
+            items.append(MediaItemDTO(from: model))
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
     }
 
-    func updateItem() {
+    func updateItem() async {
         do {
             self.currentItem?.title = title
             self.currentItem?.desc = desc
@@ -97,7 +95,7 @@ final class MediaItemViewModel {
 
             guard let currentItem, let selectedImageData else { return }
 
-            try repository.update(currentItem, data: selectedImageData)
+            try await repository.update(byUUID: currentItem.id, data: selectedImageData, title: title, desc: desc)
             if let idx = items.firstIndex(where: { $0.id == currentItem.id }) {
                 items[idx] = currentItem
             }
@@ -106,22 +104,20 @@ final class MediaItemViewModel {
         }
     }
 
-    func getImageData(for item: MediaItemDTO) async throws -> Data? {
+    func getImageData(for item: MediaItemDTO) async -> Data? {
         do {
-            return try await repository.getImage(item)
+            return try await repository.getImage(item.id)
         } catch {
+            self.error = .repositoryFailure(error.localizedDescription)
             return nil
         }
     }
 
     func prepareMediaItem(_ data: Data?, _ ext: String) {
-        Task {
-            guard let data else { return }
-
-            selectedImageData = data
-            title.isEmpty ? title = "media_\(UUID().uuidString.prefix(8))" : ()
-            file.isEmpty ? file = "\(title).\(ext)" : ()
-        }
+        guard let data else { return }
+        selectedImageData = data
+        title.isEmpty ? title = "media_\(UUID().uuidString.prefix(8))" : ()
+        file.isEmpty ? file = "\(title).\(ext)" : ()
     }
 
     // MARK: - Private

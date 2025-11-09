@@ -35,7 +35,7 @@ final class MediaItemDetailViewModel {
 
     func getImage() async throws -> Data? {
         do {
-            return try await repository.getImage(item)
+            return try await repository.getImage(item.id)
         } catch {
             return nil
         }
