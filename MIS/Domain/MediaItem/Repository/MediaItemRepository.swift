@@ -124,7 +124,12 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         try data.write(to: fileURL, options: .atomic)
     }
 
-    private func deleteImageExtern(dbID: String?) async throws {}
+    private func deleteImageExtern(dbID: String?) async throws {
+        guard let id = Int(dbID ?? "") else {
+            throw MediaItemError.repositoryFailure("Could not delte MediaItem: no ID provided")
+        }
+        try await service.deleteMedia(id: id)
+    }
 
     private func deleteImageLocal(fileName: String) async throws {
         let fileURL = documentsURL.appending(path: fileName, directoryHint: .notDirectory)

@@ -11,4 +11,5 @@ protocol MediaServiceProtocol {
     func uploadMedia(data: Data, fileURL: URL) async throws -> Int
     func fetchMetadata(for id: Int) async throws -> [String: Any]
     func downloadMedia(id: Int) async throws -> Data
+    func deleteMedia(id: Int) async throws
 }

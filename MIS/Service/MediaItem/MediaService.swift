@@ -73,8 +73,24 @@ class MediaService: MediaServiceProtocol {
             throw NSError(domain: "UpdateError", code: 0)
         }
     }
+    
+    func deleteMedia(id: Int) async throws {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/media/\(id)"))
+        request.httpMethod = "DELETE"
 
+        let (_, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            throw NSError(domain: "DeleteError", code: 0)
+        }
+    }
+    
     // MARK: - Private
 
-    private let baseURL = URL(string: "http://192.168.0.91:8000")!
+    private var baseURL: URL {
+        let ip = UserDefaults.standard.string(forKey: "user_ip_address") ?? "127.0.0.1"
+        let port = UserDefaults.standard.string(forKey: "user_ip_port") ?? "8000"
+        let urlString = "http://\(ip):\(port)"
+        return URL(string: urlString) ?? URL(string: "http://127.0.0.1:8000")!
+    }
 }

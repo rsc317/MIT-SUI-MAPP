@@ -40,6 +40,10 @@ struct RootView: View {
                 .tabItem {
                     Label("Karte", systemImage: "map")
                 }
+            SettingsView()
+                .tabItem {
+                    Label("Einstellungen", systemImage: "gearshape")
+                }
         }
         .environment(coordinator)
     }
