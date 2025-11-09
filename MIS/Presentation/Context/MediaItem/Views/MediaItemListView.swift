@@ -91,12 +91,19 @@ struct MediaItemListView: View {
                             Text(item.createDate.formatted())
                                 .font(.subheadline)
                                 .foregroundStyle(.text)
-                            Text("Location: \(item.location.rawValue)")
-                                .font(.subheadline)
-                                .foregroundStyle(.text)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Image(systemName: item.location == .local ? "internaldrive" : "cloud")
+                            .symbolRenderingMode(.palette)
+                            .foregroundStyle(item.location == .local ? .green : .blue)
+                            .font(.system(size: 17, weight: .bold))
+                        Text(item.location == .local ? "Lokal" : "Extern")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(item.location == .local ? .green : .blue)
+                    }
                 }
                 .padding()
             }
@@ -122,3 +129,4 @@ struct MediaItemListView: View {
         }
     }
 }
+
