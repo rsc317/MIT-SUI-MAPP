@@ -20,7 +20,8 @@ struct MediaItemAddOrEditView: View {
     @State private var titleError: String? = nil
     @State private var imageError: String? = nil
     @State private var showSaveOptions = false
-
+    @State private var showDeleteItemAlert = false
+    
     var body: some View {
         let imageData = viewModel.selectedImageData
 
@@ -95,17 +96,27 @@ struct MediaItemAddOrEditView: View {
             .navigationTitle(isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
             .toolbarTitleDisplayMode(.inline)
             .modifier(NavigationBarTitleColorModifier(color: .accentColor))
+            .deleteConfirmationAlert(
+                isPresented: $showDeleteItemAlert,
+                title: "Medium löschen?",
+                message: "Möchten Sie das Medium \(viewModel.currentItem?.title ?? "")?",
+                destructiveAction: {
+                    Task {
+                        await viewModel.deleteCurrentItem()
+                        coordinator.pop()
+                    }
+                }
+            )
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     UIComponentFactory.createToolbarButton(
                         label: isEditMode ? GlobalLocalizationKeys.BUTTON_DELETE : GlobalLocalizationKeys.BUTTON_CANCEL,
                         action: {
                             if isEditMode {
-                                Task {
-                                    await viewModel.deleteCurrentItem()
-                                }
+                                showDeleteItemAlert = true
+                            } else {
+                                coordinator.dismissSheet()
                             }
-                            coordinator.dismissSheet()
                         },
                         accessibilityId: isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
                         color: isEditMode ? .error : .accentColor

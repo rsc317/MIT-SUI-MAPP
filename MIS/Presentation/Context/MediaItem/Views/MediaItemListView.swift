@@ -12,6 +12,7 @@ struct MediaItemListView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
     @State var viewModel: MediaItemViewModel
+    @State private var showDeleteItemAlert: Bool = false
 
     var body: some View {
         List {
@@ -20,9 +21,10 @@ struct MediaItemListView: View {
                     .onTapGesture {
                         coordinator.push(route: .itemDetail(item))
                     }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         UIComponentFactory.createDeleteButton(action: {
-                            Task { await viewModel.deleteItem(item) }
+                            viewModel.currentItem = item
+                            showDeleteItemAlert = true
                         }, accessibilityId: MediaItemAID.BUTTON_DELETE)
 
                         Button {
@@ -47,7 +49,7 @@ struct MediaItemListView: View {
         .confirmationDialog(viewModel.currentItem?.title ?? "Unbekannt", isPresented: $showingOptions, titleVisibility: .visible) {
             Button(GlobalLocalizationKeys.BUTTON_DELETE.localized, role: .destructive) {
                 Task {
-                    await viewModel.deleteCurrentItem()
+                    showDeleteItemAlert = true
                 }
             }
             Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {
@@ -55,6 +57,17 @@ struct MediaItemListView: View {
             }
             Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }
+        .deleteConfirmationAlert(
+            isPresented: $showDeleteItemAlert,
+            title: "Medium löschen?",
+            message: "Möchten Sie das Medium \(viewModel.currentItem?.title ?? "")?",
+            destructiveAction: {
+                Task {
+                    await viewModel.deleteCurrentItem()
+                    coordinator.pop()
+                }
+            }
+        )
         Spacer()
         HStack {
             Picker("Filter", selection: $filter) {

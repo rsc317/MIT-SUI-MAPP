@@ -9,6 +9,7 @@ import SwiftUI
 
 struct MediaItemDetailView: View {
     @State var viewModel: MediaItemDetailViewModel
+    @State private var showDeleteItemAlert = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -31,10 +32,7 @@ struct MediaItemDetailView: View {
         .toolbar {
             ToolbarItem(placement: .destructiveAction) {
                 Button(role: .destructive, action: {
-                    Task {
-                        await viewModel.deleteItem()
-                        coordinator.pop()
-                    }
+                    showDeleteItemAlert = true
                 }) {
                     Image(systemName: "trash")
                         .foregroundStyle(.error)
@@ -42,6 +40,17 @@ struct MediaItemDetailView: View {
                 .accessibilityIdentifier(MediaItemAID.BUTTON_DELETE.rawValue)
             }
         }
+        .deleteConfirmationAlert(
+            isPresented: $showDeleteItemAlert,
+            title: "Medium löschen?",
+            message: "Möchten Sie das Medium \(viewModel.item.title)?",
+            destructiveAction: {
+                Task {
+                    await viewModel.deleteItem()
+                    coordinator.pop()
+                }
+            }
+        )
         .task {
             await loadImage()
         }
