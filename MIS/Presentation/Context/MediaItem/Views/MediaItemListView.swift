@@ -12,9 +12,10 @@ struct MediaItemListView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
     @State var viewModel: MediaItemViewModel
+
     var body: some View {
         List {
-            ForEach(viewModel.items, id: \.id) { item in
+            ForEach(filteredItems, id: \.id) { item in
                 ItemRowView(item: item, viewModel: viewModel)
                     .onTapGesture {
                         coordinator.push(route: .itemDetail(item))
@@ -54,13 +55,39 @@ struct MediaItemListView: View {
             }
             Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }
+        Spacer()
+        HStack {
+            Picker("Filter", selection: $filter) {
+                Text("Alle").tag(FilterType.all)
+                Image(systemName: "internaldrive")
+                    .tag(FilterType.local)
+                Image(systemName: "cloud")
+                    .tag(FilterType.remote)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+        }
+        .padding(.bottom, 12)
+    }
+
+    private var filteredItems: [MediaItemDTO] {
+        switch filter {
+        case .all: viewModel.items
+        case .local: viewModel.items.filter { $0.location == .local }
+        case .remote: viewModel.items.filter { $0.location == .remote }
+        }
     }
 
     // MARK: - Private
 
     @State private var showingOptions = false
+    @State private var filter = FilterType.all
 
-    struct ItemRowView: View {
+    private enum FilterType {
+        case all, local, remote
+    }
+
+    private struct ItemRowView: View {
         // MARK: - Internal
 
         let item: MediaItemDTO
@@ -129,4 +156,3 @@ struct MediaItemListView: View {
         }
     }
 }
-
