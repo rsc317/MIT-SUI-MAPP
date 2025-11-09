@@ -12,7 +12,6 @@ struct MediaItemListView: View {
 
     @Environment(AppCoordinator.self) private var coordinator
     @State var viewModel: MediaItemViewModel
-
     var body: some View {
         List {
             ForEach(viewModel.items, id: \.id) { item in
@@ -116,13 +115,8 @@ struct MediaItemListView: View {
         private func loadImage() async {
             isLoading = true
             defer { isLoading = false }
-
-            if let cached = ImageMemoryCache.shared.get(for: item.id.uuidString),
-               let uiImage = UIImage(data: cached) {
-                image = Image(uiImage: uiImage)
-            } else if let data = try? await viewModel.getImageData(for: item),
-                      let uiImage = UIImage(data: data) {
-                ImageMemoryCache.shared.set(data, for: item.id.uuidString)
+            if let data = try? await viewModel.getImageData(for: item),
+               let uiImage = UIImage(data: data) {
                 image = Image(uiImage: uiImage)
             }
         }

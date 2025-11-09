@@ -78,14 +78,7 @@ final class MediaItemViewModel {
         await deleteItem(currentItem)
         self.currentItem = nil
     }
-/**
- init(uuid: UUID = UUID(),
-      title: String,
-      desc: String? = nil,
-      createDate: Date,
-      file: String,
-      dbID: String? = nil)
- */
+
     func saveNewItem(_ local: Bool = true) async {
         do {
             guard let data = selectedImageData else { return }

@@ -30,13 +30,17 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
     func save(toLocalStore: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItemDTO {
         let model = MediaItem(title: title, desc: desc, file: file)
+        var cachKey = model.file.file
         if toLocalStore {
             let fileURL = documentsURL.appending(path: model.file.file, directoryHint: .notDirectory)
             try data.write(to: fileURL)
         } else {
             let dbID = try await service.uploadMedia(data: data, fileURL: model.file.url)
+            cachKey = String(dbID)
             model.file.dbID = String(dbID)
         }
+        ImageMemoryCache.shared.set(data, for: cachKey)
+
         context.insert(model)
         try context.save()
         return MediaItemDTO(from: model)
@@ -50,32 +54,53 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         model.file = MediaFile(dto.dbID, dto.file)
 
         Task {
+            var cachKey = model.file.file
             if dto.isFileOnLocalStorage {
                 try updateImageLocal(data: data, file: model.file.file)
             } else if let id = dto.dbID {
+                cachKey = id
                 try await updateImageExtern(data: data, dbID: id, fileURL: model.file.url)
             }
+            ImageMemoryCache.shared.set(data, for: cachKey)
         }
         
         try context.save()
     }
 
     func delete(byUUID id: UUID) async throws {
-        guard let item = try fetch(byUUID: id) else { return }
+        guard let model = try fetch(byUUID: id) else { return }
 
-        item.file.location == .local ? try await deleteImageLocal(fileName: item.file.file) : try await deleteImageExtern(dbID: item.file.dbID)
-        context.delete(item)
+        model.file.location == .local ? try await deleteImageLocal(fileName: model.file.file) : try await deleteImageExtern(dbID: model.file.dbID)
+        context.delete(model)
         try context.save()
     }
 
+//    func getImage(_ dto: MediaItemDTO) async throws -> Data? {
+//        if dto.isFileOnLocalStorage {
+//            let fileURL = documentsURL.appending(path: dto.file, directoryHint: .notDirectory)
+//            return try? Data(contentsOf: fileURL)
+//        } else {
+//            guard let dbID = dto.dbID, let id = Int(dbID) else { return nil }
+//            return try await service.downloadMedia(id: id)
+//        }
+//    }
     func getImage(_ dto: MediaItemDTO) async throws -> Data? {
+        let cacheKey = dto.isFileOnLocalStorage ? dto.file : (dto.dbID ?? "")
+        if let cached = ImageMemoryCache.shared.get(for: cacheKey) {
+            return cached
+        }
+        var data: Data?
         if dto.isFileOnLocalStorage {
             let fileURL = documentsURL.appending(path: dto.file, directoryHint: .notDirectory)
-            return try? Data(contentsOf: fileURL)
+            data = try? Data(contentsOf: fileURL)
         } else {
             guard let dbID = dto.dbID, let id = Int(dbID) else { return nil }
-            return try await service.downloadMedia(id: id)
+            data = try await service.downloadMedia(id: id)
         }
+        if let data {
+            ImageMemoryCache.shared.set(data, for: cacheKey)
+        }
+        return data
     }
 
     func fetch(byUUID id: UUID) throws -> MediaItem? {
