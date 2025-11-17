@@ -6,7 +6,9 @@
 //
 
 import Combine
+import CoreLocation
 import Foundation
+import ImageIO
 import Observation
 import SwiftData
 
@@ -56,7 +58,7 @@ final class MediaItemViewModel {
     func loadItems() async {
         do {
             let models = try await repository.fetchAll()
-            self.items = models.map { MediaItemDTO(from: $0) }
+            items = models.map { MediaItemDTO(from: $0) }
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
@@ -73,6 +75,7 @@ final class MediaItemViewModel {
 
     func deleteCurrentItem() async {
         guard let currentItem else { return }
+
         await deleteItem(currentItem)
         self.currentItem = nil
     }
@@ -80,6 +83,7 @@ final class MediaItemViewModel {
     func saveItem(_ local: Bool = true) async {
         do {
             guard let data = selectedImageData else { return }
+
             let model = try await repository.save(shouldSaveLocal: local, data: data, title: title, desc: desc, file: file)
             items.append(MediaItemDTO(from: model))
         } catch {
@@ -115,9 +119,26 @@ final class MediaItemViewModel {
 
     func prepareMediaItem(_ data: Data?, _ ext: String) {
         guard let data else { return }
+
         selectedImageData = data
         title.isEmpty ? title = "media_\(UUID().uuidString.prefix(8))" : ()
         file.isEmpty ? file = "\(title).\(ext)" : ()
+    }
+
+    func extractGPSMetadataOrCurrentLocation(from imageData: Data) async -> CLLocationCoordinate2D? {
+        if let source = CGImageSourceCreateWithData(imageData as CFData, nil),
+           let metadata = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+           let gpsDict = metadata[kCGImagePropertyGPSDictionary] as? [CFString: Any],
+           let latitude = gpsDict[kCGImagePropertyGPSLatitude] as? Double,
+           let longitude = gpsDict[kCGImagePropertyGPSLongitude] as? Double,
+           let latRef = gpsDict[kCGImagePropertyGPSLatitudeRef] as? String,
+           let lonRef = gpsDict[kCGImagePropertyGPSLongitudeRef] as? String {
+            let lat = latRef == "S" ? -latitude : latitude
+            let lon = lonRef == "W" ? -longitude : longitude
+            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+        }
+
+        return await LocationManager.shared.requestCurrentLocationAsync()
     }
 
     // MARK: - Private

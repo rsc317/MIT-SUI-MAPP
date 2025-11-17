@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-public class PersistenceController {
+public class PersistenceController: PersistenceControllerProtocol {
     // MARK: - Lifecycle
 
     init(inMemory: Bool = false) {

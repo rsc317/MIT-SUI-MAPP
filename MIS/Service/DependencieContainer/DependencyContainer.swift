@@ -6,6 +6,12 @@
 //
 
 final class DependencyContainer: DependencyContainerProtocol {
+    // MARK: - Lifecycle
+
+    init(persistence: PersistenceControllerProtocol = PersistenceController()) {
+        self.persistence = persistence
+    }
+
     // MARK: - Internal
 
     func makeMediaItemViewModel() -> MediaItemViewModel {
@@ -20,5 +26,5 @@ final class DependencyContainer: DependencyContainerProtocol {
 
     // MARK: - Private
 
-    private let persistence = PersistenceController()
+    private let persistence: PersistenceControllerProtocol
 }

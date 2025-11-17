@@ -14,14 +14,14 @@ struct MediaItemAddOrEditView: View {
         case title, desc
     }
 
-    @Environment(AppCoordinator.self) private var coordinator
+    @Environment(\.coordinator) private var coordinator
     @State var viewModel: MediaItemViewModel
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var titleError: String? = nil
     @State private var imageError: String? = nil
     @State private var showSaveOptions = false
     @State private var showDeleteItemAlert = false
-    
+
     var body: some View {
         let imageData = viewModel.selectedImageData
 

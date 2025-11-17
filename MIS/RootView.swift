@@ -45,7 +45,7 @@ struct RootView: View {
                     Label("Einstellungen", systemImage: "gearshape")
                 }
         }
-        .environment(coordinator)
+        .environment(\.coordinator, coordinator)
     }
 
     // MARK: - Private

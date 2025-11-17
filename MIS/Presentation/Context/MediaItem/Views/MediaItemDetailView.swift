@@ -57,12 +57,11 @@ struct MediaItemDetailView: View {
         .applyGlobalBackground()
     }
 
-    @Environment(AppCoordinator.self) private var coordinator
+    @Environment(\.coordinator) private var coordinator
     @State private var image = Image(systemName: "defaultPicture")
     @State private var isLoading = true
 
-    @MainActor
-    private func loadImage() async {
+    @MainActor private func loadImage() async {
         defer { isLoading = false }
 
         if let data = try? await viewModel.getImage(),

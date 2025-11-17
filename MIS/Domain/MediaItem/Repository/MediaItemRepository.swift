@@ -13,7 +13,7 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
     // MARK: - Init
 
-    init(persistence: PersistenceController, service: MediaServiceProtocol = MediaService.shared) {
+    init(persistence: PersistenceControllerProtocol, service: MediaServiceProtocol = MediaService.shared) {
         context = persistence.context
         self.service = service
     }

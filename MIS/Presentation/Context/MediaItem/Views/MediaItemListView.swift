@@ -10,7 +10,7 @@ import SwiftUI
 struct MediaItemListView: View {
     // MARK: - Internal
 
-    @Environment(AppCoordinator.self) private var coordinator
+    @Environment(\.coordinator) private var coordinator
     @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert: Bool = false
 

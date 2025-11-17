@@ -12,8 +12,7 @@ import SwiftUI
 // MARK: - AppCoordinator -
 
 @MainActor
-@Observable
-final class AppCoordinator {
+@Observable final class AppCoordinator {
     // MARK: - Lifecycle
 
     init(container: DependencyContainerProtocol? = nil) {
@@ -26,8 +25,7 @@ final class AppCoordinator {
     var sheet: Sheet?
     var fullScreenCover: FullScreenCover?
 
-    @ViewBuilder
-    func build(route: Route) -> some View {
+    @ViewBuilder func build(route: Route) -> some View {
         switch route {
         case .itemList:
             MediaItemListView(viewModel: container.makeMediaItemViewModel())
@@ -36,16 +34,14 @@ final class AppCoordinator {
         }
     }
 
-    @ViewBuilder
-    func buildSheet(sheet: Sheet) -> some View {
+    @ViewBuilder func buildSheet(sheet: Sheet) -> some View {
         switch sheet {
         case let .addOrEditNewItem(viewModel):
             MediaItemAddOrEditView(viewModel: viewModel)
         }
     }
 
-    @ViewBuilder
-    func buildCover(cover: FullScreenCover) -> some View {
+    @ViewBuilder func buildCover(cover: FullScreenCover) -> some View {
         switch cover {
         case .editItem: EmptyView()
         }
