@@ -8,8 +8,7 @@
 import Foundation
 import SwiftData
 
-@Model
-final class MediaFile: Identifiable {
+@Model final class MediaFile: Identifiable {
     // MARK: - Lifecycle
 
     init(file: String) {

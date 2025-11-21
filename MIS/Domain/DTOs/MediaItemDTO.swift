@@ -4,6 +4,8 @@
 //
 //  Created by Emircan Duman on 02.11.25.
 //
+
+import CoreLocation
 import Foundation
 
 // MARK: - MediaItemDTO -
@@ -11,22 +13,20 @@ import Foundation
 struct MediaItemDTO: Identifiable, Sendable, Hashable {
     let id: UUID
     let createDate: Date
-    let location: FileLocation
-    var dbID: String?
+    let mediaFile: MediaFileDTO
     var title: String
     var desc: String?
-    var file: String
-    var imageUpdateToken: UUID = UUID()
+    var fileUpdateToken: UUID = UUID()
+    var longitude: CLLocationDegrees { mediaFile.fileGPSCoordinate.longitude }
+    var latitude: CLLocationDegrees { mediaFile.fileGPSCoordinate.latitude }
 }
 
 extension MediaItemDTO {
-    init(from model: MediaItem) {
+    init(from model: MediaItem, fileGPSCoordinate: CLLocationCoordinate2D) {
         id = model.uuid
-        dbID = model.file.dbID
         createDate = model.createDate
-        location = model.file.location
         title = model.title
         desc = model.desc
-        file = model.file.file
+        mediaFile = MediaFileDTO(id: model.uuid, dbID: model.file.dbID, location: model.file.location, file: model.file.file, fileGPSCoordinate: fileGPSCoordinate)
     }
 }

@@ -13,8 +13,7 @@ import Observation
 import SwiftData
 
 @MainActor
-@Observable
-final class MediaItemViewModel {
+@Observable final class MediaItemViewModel {
     // MARK: - Lifecycle
 
     // MARK: - Init
@@ -40,7 +39,7 @@ final class MediaItemViewModel {
                 if let item = currentItem {
                     title = item.title
                     desc = item.desc ?? ""
-                    file = item.file
+                    file = item.mediaFile.file
                     selectedImageData = try await repository.getImage(item.id)
                 }
             } catch {}
@@ -58,7 +57,17 @@ final class MediaItemViewModel {
     func loadItems() async {
         do {
             let models = try await repository.fetchAll()
-            items = models.map { MediaItemDTO(from: $0) }
+            var loadedItems: [MediaItemDTO] = []
+            
+            for model in models {
+                if let fileData = try await repository.getImage(model.uuid),
+                   let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: fileData) {
+                    let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
+                    loadedItems.append(item)
+                }
+            }
+            
+            items = loadedItems
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
@@ -85,7 +94,11 @@ final class MediaItemViewModel {
             guard let data = selectedImageData else { return }
 
             let model = try await repository.save(shouldSaveLocal: local, data: data, title: title, desc: desc, file: file)
-            items.append(MediaItemDTO(from: model))
+            
+            if let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: data) {
+                let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
+                items.append(item)
+            }
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
@@ -95,7 +108,7 @@ final class MediaItemViewModel {
         do {
             self.currentItem?.title = title
             self.currentItem?.desc = desc
-            self.currentItem?.imageUpdateToken = UUID()
+            self.currentItem?.fileUpdateToken = UUID()
 
             guard let currentItem, let selectedImageData else { return }
 

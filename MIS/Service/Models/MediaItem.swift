@@ -40,7 +40,7 @@ final class MediaItem: Identifiable {
             title: dto.title,
             desc: dto.desc,
             createDate: dto.createDate,
-            file: dto.file
+            file: dto.mediaFile.file
         )
         context.insert(item)
         return item

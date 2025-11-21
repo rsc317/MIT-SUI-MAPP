@@ -64,7 +64,7 @@ struct MediaItemDetailView: View {
     @MainActor private func loadImage() async {
         defer { isLoading = false }
 
-        if let data = try? await viewModel.getImage(),
+        if let data = try? await viewModel.getImageData(),
            let uiImage = UIImage(data: data) {
             image = Image(uiImage: uiImage)
         }
