@@ -13,6 +13,7 @@ struct MediaItemListView: View {
     @Environment(\.coordinator) private var coordinator
     @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert: Bool = false
+    @AppStorage("use_design_two") private var useDesignTwo: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -21,12 +22,14 @@ struct MediaItemListView: View {
                     ForEach(filteredItems, id: \.id) { item in
                         ItemRowView(item: item, viewModel: viewModel)
                             .onTapGesture {
-                                coordinator.push(route: .itemDetail(item))
+                                viewModel.currentItem = item
+                                useDesignTwo ? coordinator.presentFullScreenCover(.itemDetail) :
+                                coordinator.push(route: .itemDetail)
                             }
                             .contextMenu {
                                 Button {
                                     viewModel.currentItem = item
-                                    coordinator.presentSheet(.addOrEditNewItem(viewModel))
+                                    coordinator.presentSheet(.addOrEditNewItem)
                                 } label: {
                                     Label(GlobalLocalizationKeys.BUTTON_EDIT.localized, systemImage: "pencil")
                                 }
@@ -63,7 +66,7 @@ struct MediaItemListView: View {
         .navigationTitle(MediaItemLK.NAV_TITLE.localized)
         .toolbar {
             UIComponentFactory.createAddButton(action: {
-                coordinator.presentSheet(.addOrEditNewItem(viewModel))
+                coordinator.presentSheet(.addOrEditNewItem)
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }
         .task { await viewModel.loadItems() }
@@ -74,7 +77,7 @@ struct MediaItemListView: View {
                 }
             }
             Button(GlobalLocalizationKeys.BUTTON_EDIT.localized) {
-                coordinator.presentSheet(.addOrEditNewItem(viewModel))
+                coordinator.presentSheet(.addOrEditNewItem)
             }
             Button(GlobalLocalizationKeys.BUTTON_CANCEL.localized, role: .cancel) {}
         }
@@ -168,7 +171,7 @@ struct MediaItemListView: View {
                     
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.accent)
                             .font(.system(size: 13, weight: .medium))
                         Text(item.createDate.formatted(date: .abbreviated, time: .shortened))
                             .font(.subheadline)
@@ -177,7 +180,7 @@ struct MediaItemListView: View {
                     
                     HStack(spacing: 4) {
                         Image(systemName: "globe")
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(.accent)
                             .font(.system(size: 13, weight: .medium))
                         Text(String(format: "%.4f, %.4f", item.latitude, item.longitude))
                             .font(.subheadline)

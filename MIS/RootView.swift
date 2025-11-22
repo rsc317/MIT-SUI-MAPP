@@ -35,15 +35,36 @@ struct RootView: View {
             .tabItem {
                 Label(MediaItemLK.NAV_TITLE.localized, systemImage: "list.bullet.rectangle")
             }
-
-            MapsView()
-                .tabItem {
-                    Label("Karte", systemImage: "map")
-                }
-            SettingsView()
-                .tabItem {
-                    Label("Einstellungen", systemImage: "gearshape")
-                }
+            NavigationStack(path: $coordinator.path) {
+                coordinator.build(route: .map)
+                    .navigationDestination(for: Route.self) { route in
+                        coordinator.build(route: route)
+                    }
+                    .sheet(item: $coordinator.sheet) { sheet in
+                        coordinator.buildSheet(sheet: sheet)
+                    }
+                    .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
+                        coordinator.buildCover(cover: cover)
+                    }
+            }
+            .tabItem {
+                Label("Karte", systemImage: "map")
+            }
+            NavigationStack(path: $coordinator.path) {
+                coordinator.build(route: .settings)
+                    .navigationDestination(for: Route.self) { route in
+                        coordinator.build(route: route)
+                    }
+                    .sheet(item: $coordinator.sheet) { sheet in
+                        coordinator.buildSheet(sheet: sheet)
+                    }
+                    .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
+                        coordinator.buildCover(cover: cover)
+                    }
+            }
+            .tabItem {
+                Label("Einstellungen", systemImage: "gearshape")
+            }
         }
         .environment(\.coordinator, coordinator)
     }

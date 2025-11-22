@@ -17,6 +17,7 @@ import SwiftUI
 
     init(container: DependencyContainerProtocol? = nil) {
         self.container = container ?? DependencyContainer()
+        mediaViewModel = self.container.makeMediaItemViewModel()
     }
 
     // MARK: - Internal
@@ -25,25 +26,32 @@ import SwiftUI
     var sheet: Sheet?
     var fullScreenCover: FullScreenCover?
 
+    private(set) var mediaViewModel: MediaItemViewModel
+
     @ViewBuilder func build(route: Route) -> some View {
         switch route {
         case .itemList:
-            MediaItemListView(viewModel: container.makeMediaItemViewModel())
-        case let .itemDetail(item):
-            MediaItemDetailView(viewModel: container.makeMediaItemDetailViewModel(item))
+            MediaItemListView(viewModel: mediaViewModel)
+        case let .itemDetail:
+            MediaItemDetailView(viewModel: mediaViewModel)
+        case .map:
+            MapsView(viewModel: mediaViewModel)
+        case .settings:
+            SettingsView()
         }
     }
 
     @ViewBuilder func buildSheet(sheet: Sheet) -> some View {
         switch sheet {
-        case let .addOrEditNewItem(viewModel):
-            MediaItemAddOrEditView(viewModel: viewModel)
+        case let .addOrEditNewItem:
+            MediaItemAddOrEditView(viewModel: mediaViewModel)
         }
     }
 
     @ViewBuilder func buildCover(cover: FullScreenCover) -> some View {
         switch cover {
-        case .editItem: EmptyView()
+        case let .itemDetail:
+            MediaItemDetailSheet(viewModel: mediaViewModel)
         }
     }
 

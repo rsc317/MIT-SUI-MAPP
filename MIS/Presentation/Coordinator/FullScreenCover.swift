@@ -7,12 +7,14 @@
 
 import Foundation
 
-enum FullScreenCover: String, Identifiable {
-    case editItem
+enum FullScreenCover: Identifiable {
+    case itemDetail
 
     // MARK: - Internal
 
     var id: String {
-        rawValue
+        switch self {
+        case .itemDetail: "itemDetail"
+        }
     }
 }

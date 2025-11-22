@@ -26,7 +26,7 @@ import SwiftData
 
     var items = [MediaItemDTO]()
     var error: MediaItemError?
-
+    var selectedItemID: UUID?
     var currentItem: MediaItemDTO?
     var selectedImageData: Data?
     var title = ""
@@ -57,8 +57,8 @@ import SwiftData
     func loadItems() async {
         do {
             let models = try await repository.fetchAll()
-            var loadedItems: [MediaItemDTO] = []
-            
+            var loadedItems = [MediaItemDTO]()
+
             for model in models {
                 if let fileData = try await repository.getImage(model.uuid),
                    let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: fileData) {
@@ -66,7 +66,7 @@ import SwiftData
                     loadedItems.append(item)
                 }
             }
-            
+
             items = loadedItems
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
@@ -94,7 +94,7 @@ import SwiftData
             guard let data = selectedImageData else { return }
 
             let model = try await repository.save(shouldSaveLocal: local, data: data, title: title, desc: desc, file: file)
-            
+
             if let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: data) {
                 let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
                 items.append(item)
@@ -126,6 +126,16 @@ import SwiftData
             return try await repository.getImage(item.id)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
+            return nil
+        }
+    }
+
+    func getImageData() async throws -> Data? {
+        do {
+            guard let id = currentItem?.id else { return nil }
+
+            return try await repository.getImage(id)
+        } catch {
             return nil
         }
     }

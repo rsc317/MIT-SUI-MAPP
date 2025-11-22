@@ -8,7 +8,7 @@
 import Foundation
 
 enum Sheet: Identifiable {
-    case addOrEditNewItem(MediaItemViewModel)
+    case addOrEditNewItem
 
     // MARK: - Internal
 

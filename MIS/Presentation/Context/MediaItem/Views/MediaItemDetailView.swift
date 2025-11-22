@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MediaItemDetailView: View {
-    @State var viewModel: MediaItemDetailViewModel
+    @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert = false
 
     var body: some View {
@@ -26,7 +26,7 @@ struct MediaItemDetailView: View {
                 }
             }
         }
-        .navigationTitle(viewModel.item.title)
+        .navigationTitle(viewModel.currentItem?.title ?? "")
         .toolbarTitleDisplayMode(.inline)
         .modifier(NavigationBarTitleColorModifier(color: .accentColor))
         .toolbar {
@@ -43,10 +43,10 @@ struct MediaItemDetailView: View {
         .deleteConfirmationAlert(
             isPresented: $showDeleteItemAlert,
             title: "Medium löschen?",
-            message: "Möchten Sie das Medium \(viewModel.item.title)?",
+            message: "Möchten Sie das Medium \(viewModel.currentItem?.title ?? "")?",
             destructiveAction: {
                 Task {
-                    await viewModel.deleteItem()
+                    await viewModel.deleteCurrentItem()
                     coordinator.pop()
                 }
             }

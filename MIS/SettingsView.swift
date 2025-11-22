@@ -15,6 +15,19 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section(header: Text("Darstellung")) {
+                    Toggle(isOn: $useDesignTwo) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Alternative Ansicht")
+                                .font(.body)
+                            Text(useDesignTwo ? "Design 2 aktiv" : "Design 1 aktiv")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .tint(.blue)
+                }
+
                 Section(header: Text("Server-IP-Adresse")) {
                     TextField("IP-Adresse eingeben", text: $input)
                         .keyboardType(.decimalPad)
@@ -58,7 +71,7 @@ struct SettingsView: View {
 
     @AppStorage("user_ip_address") private var ipAddress: String = ""
     @AppStorage("user_ip_port") private var port: String = ""
+    @AppStorage("use_design_two") private var useDesignTwo: Bool = false
     @State private var input: String = ""
     @State private var portInput: String = ""
-    @State private var showCopied = false
 }
