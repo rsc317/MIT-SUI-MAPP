@@ -1,7 +1,6 @@
 import Foundation
 
 class MediaService: MediaServiceProtocol {
-
     // MARK: - Internal
 
     static let shared = MediaService()
@@ -33,17 +32,6 @@ class MediaService: MediaServiceProtocol {
         return id
     }
 
-    func fetchMetadata(for id: Int) async throws -> [String: Any] {
-        let url = baseURL.appendingPathComponent("/media/\(id)")
-        let (data, _) = try await URLSession.shared.data(from: url)
-
-        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw NSError(domain: "MetadataError", code: 0)
-        }
-
-        return json
-    }
-
     func downloadMedia(id: Int) async throws -> Data {
         let url = baseURL.appendingPathComponent("/media/\(id)/download")
         let (data, _) = try await URLSession.shared.data(from: url)
@@ -53,7 +41,7 @@ class MediaService: MediaServiceProtocol {
     func updateMedia(mediaID: Int, fileData: Data, fileURL: URL) async throws {
         let filename = fileURL.lastPathComponent
         let mimetype = MimeType.from(url: fileURL).rawValue
-        
+
         var request = URLRequest(url: baseURL.appendingPathComponent("/media/\(mediaID)"))
         request.httpMethod = "PUT"
 
@@ -73,7 +61,7 @@ class MediaService: MediaServiceProtocol {
             throw NSError(domain: "UpdateError", code: 0)
         }
     }
-    
+
     func deleteMedia(id: Int) async throws {
         var request = URLRequest(url: baseURL.appendingPathComponent("/media/\(id)"))
         request.httpMethod = "DELETE"
@@ -84,7 +72,7 @@ class MediaService: MediaServiceProtocol {
             throw NSError(domain: "DeleteError", code: 0)
         }
     }
-    
+
     // MARK: - Private
 
     private var baseURL: URL {

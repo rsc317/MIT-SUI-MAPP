@@ -10,7 +10,7 @@ import SwiftUI
 struct MediaItemListView: View {
     // MARK: - Internal
 
-    @Environment(\.coordinator) private var coordinator
+    @Environment(\.mediaItemCoordinator) private var coordinator
     @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert: Bool = false
     @AppStorage("use_design_two") private var useDesignTwo: Bool = false
@@ -24,7 +24,7 @@ struct MediaItemListView: View {
                             .onTapGesture {
                                 viewModel.currentItem = item
                                 useDesignTwo ? coordinator.presentFullScreenCover(.itemDetail) :
-                                coordinator.push(route: .itemDetail)
+                                coordinator.push(route: .detail)
                             }
                             .contextMenu {
                                 Button {

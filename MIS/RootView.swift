@@ -20,53 +20,48 @@ struct RootView: View {
 
     var body: some View {
         TabView {
-            NavigationStack(path: $coordinator.path) {
-                coordinator.build(route: .itemList)
-                    .navigationDestination(for: Route.self) { route in
-                        coordinator.build(route: route)
+            NavigationStack(path: $coordinator.mediaItemCoordinator.path) {
+                coordinator.mediaItemCoordinator.build(route: .list)
+                    .navigationDestination(for: MediaItemRoute.self) { route in
+                        coordinator.mediaItemCoordinator.build(route: route)
                     }
-                    .sheet(item: $coordinator.sheet) { sheet in
-                        coordinator.buildSheet(sheet: sheet)
+                    .sheet(item: $coordinator.mediaItemCoordinator.sheet) { sheet in
+                        coordinator.mediaItemCoordinator.buildSheet(sheet: sheet)
                     }
-                    .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
-                        coordinator.buildCover(cover: cover)
+                    .fullScreenCover(item: $coordinator.mediaItemCoordinator.fullScreenCover) { cover in
+                        coordinator.mediaItemCoordinator.buildCover(cover: cover)
                     }
             }
             .tabItem {
                 Label(MediaItemLK.NAV_TITLE.localized, systemImage: "list.bullet.rectangle")
             }
-            NavigationStack(path: $coordinator.path) {
-                coordinator.build(route: .map)
-                    .navigationDestination(for: Route.self) { route in
-                        coordinator.build(route: route)
+            .environment(\.mediaItemCoordinator, coordinator.mediaItemCoordinator)
+            
+            NavigationStack(path: $coordinator.mapCoordinator.path) {
+                coordinator.mapCoordinator.build(route: .map)
+                    .navigationDestination(for: MapRoute.self) { route in
+                        coordinator.mapCoordinator.build(route: route)
                     }
-                    .sheet(item: $coordinator.sheet) { sheet in
-                        coordinator.buildSheet(sheet: sheet)
-                    }
-                    .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
-                        coordinator.buildCover(cover: cover)
+                    .fullScreenCover(item: $coordinator.mapCoordinator.fullScreenCover) { cover in
+                        coordinator.mapCoordinator.buildCover(cover: cover)
                     }
             }
             .tabItem {
                 Label("Karte", systemImage: "map")
             }
-            NavigationStack(path: $coordinator.path) {
-                coordinator.build(route: .settings)
-                    .navigationDestination(for: Route.self) { route in
-                        coordinator.build(route: route)
-                    }
-                    .sheet(item: $coordinator.sheet) { sheet in
-                        coordinator.buildSheet(sheet: sheet)
-                    }
-                    .fullScreenCover(item: $coordinator.fullScreenCover) { cover in
-                        coordinator.buildCover(cover: cover)
+            .environment(\.mapCoordinator, coordinator.mapCoordinator)
+            
+            NavigationStack(path: $coordinator.settingsCoordinator.path) {
+                coordinator.settingsCoordinator.build(route: .main)
+                    .navigationDestination(for: SettingsRoute.self) { route in
+                        coordinator.settingsCoordinator.build(route: route)
                     }
             }
             .tabItem {
                 Label("Einstellungen", systemImage: "gearshape")
             }
+            .environment(\.settingsCoordinator, coordinator.settingsCoordinator)
         }
-        .environment(\.coordinator, coordinator)
     }
 
     // MARK: - Private

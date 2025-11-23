@@ -13,7 +13,7 @@ import SwiftUI
 struct MapsView: View {
     // MARK: - Internal
 
-    @Environment(\.coordinator) private var coordinator
+    @Environment(\.mapCoordinator) private var coordinator
     @AppStorage("use_design_two") private var useDesignTwo: Bool = false
 
     @State var viewModel: MediaItemViewModel
@@ -50,7 +50,7 @@ struct MapsView: View {
                                     if useDesignTwo {
                                         coordinator.presentFullScreenCover(.itemDetail)
                                     } else {
-                                        coordinator.push(route: .itemDetail)
+                                        coordinator.push(route: .detail)
                                     }
                                 }
                         }
@@ -74,7 +74,7 @@ struct MapsView: View {
                     )
                 )
             }
-            
+
             if let firstItem = viewModel.items.first {
                 position = .region(
                     MKCoordinateRegion(
@@ -88,7 +88,7 @@ struct MapsView: View {
             if oldItems.count > newItems.count {
                 viewModel.selectedItemID = nil
             }
-            
+
             if let firstItem = newItems.first {
                 withAnimation(.easeInOut(duration: 0.5)) {
                     position = .region(

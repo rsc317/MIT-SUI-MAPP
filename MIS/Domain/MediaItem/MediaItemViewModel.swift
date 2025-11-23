@@ -29,29 +29,9 @@ import SwiftData
     var selectedItemID: UUID?
     var currentItem: MediaItemDTO?
     var selectedImageData: Data?
-    var title = ""
-    var file = ""
-    var desc = ""
 
-    func onAppearAction() {
-        Task {
-            do {
-                if let item = currentItem {
-                    title = item.title
-                    desc = item.desc ?? ""
-                    file = item.mediaFile.file
-                    selectedImageData = try await repository.getImage(item.id)
-                }
-            } catch {}
-        }
-    }
-
-    func onDisappearAction() {
-        error = nil
-        currentItem = nil
-        selectedImageData = nil
-        title = ""
-        file = ""
+    var currentItemTitle: String {
+        currentItem?.title ?? ""
     }
 
     func loadItems() async {
@@ -89,38 +69,6 @@ import SwiftData
         self.currentItem = nil
     }
 
-    func saveItem(_ local: Bool = true) async {
-        do {
-            guard let data = selectedImageData else { return }
-
-            let model = try await repository.save(shouldSaveLocal: local, data: data, title: title, desc: desc, file: file)
-
-            if let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: data) {
-                let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
-                items.append(item)
-            }
-        } catch {
-            self.error = .repositoryFailure(error.localizedDescription)
-        }
-    }
-
-    func updateItem() async {
-        do {
-            self.currentItem?.title = title
-            self.currentItem?.desc = desc
-            self.currentItem?.fileUpdateToken = UUID()
-
-            guard let currentItem, let selectedImageData else { return }
-
-            try await repository.update(byUUID: currentItem.id, data: selectedImageData, title: title, desc: desc)
-            if let idx = items.firstIndex(where: { $0.id == currentItem.id }) {
-                items[idx] = currentItem
-            }
-        } catch {
-            self.error = .repositoryFailure(error.localizedDescription)
-        }
-    }
-
     func getImageData(for item: MediaItemDTO) async -> Data? {
         do {
             return try await repository.getImage(item.id)
@@ -140,14 +88,6 @@ import SwiftData
         }
     }
 
-    func prepareMediaItem(_ data: Data?, _ ext: String) {
-        guard let data else { return }
-
-        selectedImageData = data
-        title.isEmpty ? title = "media_\(UUID().uuidString.prefix(8))" : ()
-        file.isEmpty ? file = "\(title).\(ext)" : ()
-    }
-
     func extractGPSMetadataOrCurrentLocation(from imageData: Data) async -> CLLocationCoordinate2D? {
         if let source = CGImageSourceCreateWithData(imageData as CFData, nil),
            let metadata = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
@@ -162,6 +102,12 @@ import SwiftData
         }
 
         return await LocationManager.shared.requestCurrentLocationAsync()
+    }
+
+    func onDisappearAction() {
+        error = nil
+        currentItem = nil
+        selectedImageData = nil
     }
 
     // MARK: - Private

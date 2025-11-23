@@ -14,8 +14,8 @@ struct MediaItemAddOrEditView: View {
         case title, desc
     }
 
-    @Environment(\.coordinator) private var coordinator
-    @State var viewModel: MediaItemViewModel
+    @Environment(\.mediaItemCoordinator) private var coordinator
+    @State var viewModel: MediaItemAddOrEditViewModel
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var titleError: String? = nil
     @State private var imageError: String? = nil
@@ -23,7 +23,7 @@ struct MediaItemAddOrEditView: View {
     @State private var showDeleteItemAlert = false
 
     var body: some View {
-        let imageData = viewModel.selectedImageData
+        let imageData = viewModel.mediaItemViewModel.selectedImageData
 
         NavigationStack {
             Form {
@@ -93,16 +93,16 @@ struct MediaItemAddOrEditView: View {
                 )
             }
             .applyGlobalBackground()
-            .navigationTitle(isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
+            .navigationTitle(viewModel.isEditMode ? MediaItemLK.EDIT_NAV_TITLE.localized : MediaItemLK.ADD_NAV_TITLE.localized)
             .toolbarTitleDisplayMode(.inline)
             .modifier(NavigationBarTitleColorModifier(color: .accentColor))
             .deleteConfirmationAlert(
                 isPresented: $showDeleteItemAlert,
                 title: "Medium löschen?",
-                message: "Möchten Sie das Medium \(viewModel.currentItem?.title ?? "")?",
+                message: "Möchten Sie das Medium \(viewModel.mediaItemViewModel.currentItemTitle)?",
                 destructiveAction: {
                     Task {
-                        await viewModel.deleteCurrentItem()
+                        await viewModel.mediaItemViewModel.deleteCurrentItem()
                         coordinator.pop()
                     }
                 }
@@ -110,16 +110,16 @@ struct MediaItemAddOrEditView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     UIComponentFactory.createToolbarButton(
-                        label: isEditMode ? GlobalLocalizationKeys.BUTTON_DELETE : GlobalLocalizationKeys.BUTTON_CANCEL,
+                        label: viewModel.isEditMode ? GlobalLocalizationKeys.BUTTON_DELETE : GlobalLocalizationKeys.BUTTON_CANCEL,
                         action: {
-                            if isEditMode {
+                            if viewModel.isEditMode {
                                 showDeleteItemAlert = true
                             } else {
                                 coordinator.dismissSheet()
                             }
                         },
-                        accessibilityId: isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
-                        color: isEditMode ? .error : .accentColor
+                        accessibilityId: viewModel.isEditMode ? MediaItemAID.BUTTON_DELETE : MediaItemAID.BUTTON_CANCEL,
+                        color: viewModel.isEditMode ? .error : .accentColor
                     )
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -127,7 +127,7 @@ struct MediaItemAddOrEditView: View {
                         label: GlobalLocalizationKeys.BUTTON_SAVE,
                         action: {
                             Task {
-                                if isEditMode {
+                                if viewModel.isEditMode {
                                     await viewModel.updateItem()
                                     coordinator.dismissSheet()
                                 } else {
@@ -141,7 +141,6 @@ struct MediaItemAddOrEditView: View {
                 }
             }
             .onAppear {
-                isEditMode = viewModel.currentItem != nil
                 viewModel.onAppearAction()
             }
             .onDisappear {
@@ -166,7 +165,6 @@ struct MediaItemAddOrEditView: View {
 
     // MARK: - Private
 
-    @State private var isEditMode: Bool = false
     @FocusState private var focusedField: Field?
 
     private func saveAction(_ local: Bool = true) {
@@ -193,11 +191,11 @@ struct MediaItemAddOrEditView: View {
         titleError = nil
         imageError = nil
 
-        if viewModel.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        if viewModel.emptyTitle{
             titleError = "Titel darf nicht leer sein."
         }
 
-        if viewModel.selectedImageData == nil {
+        if viewModel.emptyImage {
             imageError = "Bitte wähle ein Bild aus."
         }
     }

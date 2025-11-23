@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct MediaItemDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert = false
 
@@ -47,7 +48,7 @@ struct MediaItemDetailView: View {
             destructiveAction: {
                 Task {
                     await viewModel.deleteCurrentItem()
-                    coordinator.pop()
+                    dismiss()
                 }
             }
         )
@@ -55,9 +56,11 @@ struct MediaItemDetailView: View {
             await loadImage()
         }
         .applyGlobalBackground()
+        .onDisappear {
+            viewModel.onDisappearAction()
+        }
     }
 
-    @Environment(\.coordinator) private var coordinator
     @State private var image = Image(systemName: "defaultPicture")
     @State private var isLoading = true
 

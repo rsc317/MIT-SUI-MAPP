@@ -6,6 +6,27 @@
 //
 import SwiftUI
 
-struct CoordinatorKey: EnvironmentKey {
-    static let defaultValue: AppCoordinator = AppCoordinator()
+// MARK: - Child Coordinator Keys
+
+struct MediaItemCoordinatorKey: EnvironmentKey {
+    static let defaultValue: MediaItemCoordinator = {
+        let container = DependencyContainer()
+        let viewModel = container.makeMediaItemViewModel()
+        return MediaItemCoordinator(container: container, mediaViewModel: viewModel)
+    }()
+}
+
+struct MapCoordinatorKey: EnvironmentKey {
+    static let defaultValue: MapCoordinator = {
+        let container = DependencyContainer()
+        let viewModel = container.makeMediaItemViewModel()
+        return MapCoordinator(container: container, mediaViewModel: viewModel)
+    }()
+}
+
+struct SettingsCoordinatorKey: EnvironmentKey {
+    static let defaultValue: SettingsCoordinator = {
+        let container = DependencyContainer()
+        return SettingsCoordinator(container: container)
+    }()
 }

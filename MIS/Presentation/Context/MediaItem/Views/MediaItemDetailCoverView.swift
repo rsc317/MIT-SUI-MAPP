@@ -1,5 +1,5 @@
 //
-//  MediaItemDetailSheet.swift
+//  MediaItemDetailCoverView.swift
 //  MIS
 //
 //  Created by Emircan Duman on 22.11.25.
@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-struct MediaItemDetailSheet: View {
-    @Environment(\.coordinator) private var coordinator
+struct MediaItemDetailCoverView: View {
+    @Environment(\.dismiss) private var dismiss
     let viewModel: MediaItemViewModel
 
     @State private var showDeleteAlert: Bool = false
@@ -25,7 +25,7 @@ struct MediaItemDetailSheet: View {
             VStack(spacing: 0) {
                 HStack {
                     Button {
-                        coordinator.dismissCover()
+                        dismiss()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 32))
@@ -218,14 +218,17 @@ struct MediaItemDetailSheet: View {
         .deleteConfirmationAlert(
             isPresented: $showDeleteAlert,
             title: "Medium löschen?",
-            message: "Möchten Sie das Medium \(viewModel.currentItem?.title) wirklich löschen?",
+            message: "Möchten Sie das Medium \(viewModel.currentItemTitle) wirklich löschen?",
             destructiveAction: {
                 Task {
                     await viewModel.deleteCurrentItem()
-                    coordinator.dismissCover()
+                    dismiss()
                 }
             }
         )
+        .onDisappear {
+            viewModel.onDisappearAction()
+        }
     }
 
     @MainActor private func loadImage() async {
