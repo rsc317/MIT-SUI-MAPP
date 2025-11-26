@@ -101,7 +101,7 @@ import SwiftData
             return CLLocationCoordinate2D(latitude: lat, longitude: lon)
         }
 
-        return await LocationManager.shared.requestCurrentLocationAsync()
+        return await LocationManager.shared.requestCurrentLocationAsync(timeout: 10)
     }
 
     func onDisappearAction() {

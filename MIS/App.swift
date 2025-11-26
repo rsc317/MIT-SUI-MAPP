@@ -7,12 +7,17 @@
 
 import SwiftData
 import SwiftUI
+import CoreLocation
 
-@main
-struct MISApp: App {
+@main struct MISApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .task {
+                    if LocationManager.shared.authorizationStatus == .notDetermined {
+                        LocationManager.shared.requestAuthorization()
+                    }
+                }
         }
     }
 }
