@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MediaItemDetailView: View {
-    @Environment(\.dismiss) private var dismiss
+    let onDismiss: () -> Void
+
     @State var viewModel: MediaItemViewModel
     @State private var showDeleteItemAlert = false
 
@@ -48,7 +49,7 @@ struct MediaItemDetailView: View {
             destructiveAction: {
                 Task {
                     await viewModel.deleteCurrentItem()
-                    dismiss()
+                    onDismiss()
                 }
             }
         )

@@ -103,7 +103,7 @@ struct MediaItemAddOrEditView: View {
                 destructiveAction: {
                     Task {
                         await viewModel.mediaItemViewModel.deleteCurrentItem()
-                        coordinator.pop()
+                        coordinator.dismissSheet()
                     }
                 }
             )

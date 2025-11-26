@@ -23,6 +23,11 @@ final class DependencyContainer: DependencyContainerProtocol {
         let repository = MediaItemRepository(persistence: persistence)
         return MediaItemAddOrEditViewModel(repository, mediaItemViewModel)
     }
+    
+    func makeSettingsViewModel() -> SettingsViewModel {
+        let repository = SettingsRepository()
+        return SettingsViewModel(repository)
+    }
 
     // MARK: - Private
 

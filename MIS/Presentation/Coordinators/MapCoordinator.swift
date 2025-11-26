@@ -56,14 +56,14 @@ import SwiftUI
         case .map:
             MapsView(viewModel: mediaViewModel)
         case .detail:
-            MediaItemDetailView(viewModel: mediaViewModel)
+            MediaItemDetailView(onDismiss: self.pop, viewModel: mediaViewModel)
         }
     }
     
     @ViewBuilder func buildCover(cover: FullScreenCover) -> some View {
         switch cover {
         case .itemDetail:
-            MediaItemDetailCoverView(viewModel: mediaViewModel)
+            MediaItemDetailCoverView(onDismiss: self.dismissCover, viewModel: mediaViewModel)
         }
     }
     

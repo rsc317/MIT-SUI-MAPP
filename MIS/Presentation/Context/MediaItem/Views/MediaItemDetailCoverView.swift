@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct MediaItemDetailCoverView: View {
-    @Environment(\.dismiss) private var dismiss
+    let onDismiss: () -> Void
+
     let viewModel: MediaItemViewModel
 
     @State private var showDeleteAlert: Bool = false
@@ -25,7 +26,7 @@ struct MediaItemDetailCoverView: View {
             VStack(spacing: 0) {
                 HStack {
                     Button {
-                        dismiss()
+                        onDismiss()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.system(size: 32))
@@ -222,7 +223,7 @@ struct MediaItemDetailCoverView: View {
             destructiveAction: {
                 Task {
                     await viewModel.deleteCurrentItem()
-                    dismiss()
+                    onDismiss()
                 }
             }
         )

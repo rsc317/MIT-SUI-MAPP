@@ -42,7 +42,7 @@ import SwiftUI
     @ViewBuilder func build(route: SettingsRoute) -> some View {
         switch route {
         case .main:
-            SettingsView()
+            SettingsView(viewModel: container.makeSettingsViewModel())
         }
     }
     

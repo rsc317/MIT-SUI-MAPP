@@ -8,19 +8,17 @@ import SwiftUI
 struct SettingsView: View {
     // MARK: - Internal
 
-    var fullURL: String {
-        "http://\(ipAddress):\(port)"
-    }
+    @State var viewModel: SettingsViewModel
 
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text("Darstellung")) {
-                    Toggle(isOn: $useDesignTwo) {
+                    Toggle(isOn: $viewModel.useDesignTwo) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Alternative Ansicht")
                                 .font(.body)
-                            Text(useDesignTwo ? "Design 2 aktiv" : "Design 1 aktiv")
+                            Text(viewModel.useDesignTwo ? "Design 2 aktiv" : "Design 1 aktiv")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -28,50 +26,80 @@ struct SettingsView: View {
                     .tint(.blue)
                 }
 
-                Section(header: Text("Server-IP-Adresse")) {
-                    TextField("IP-Adresse eingeben", text: $input)
-                        .keyboardType(.decimalPad)
-                        .autocapitalization(.none)
-                        .onChange(of: input) { _, newValue in
-                            if !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                               !portInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                ipAddress = newValue
-                                port = portInput
+                Section(header: Text("Server-Konfiguration")) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        TextField("IP-Adresse eingeben", text: $viewModel.ipAddressInput)
+                            .keyboardType(.decimalPad)
+                            .autocapitalization(.none)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        if let ipError = viewModel.ipAddressError {
+                            Text(ipError)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        TextField("Port eingeben", text: $viewModel.portInput)
+                            .keyboardType(.numberPad)
+                            .autocapitalization(.none)
+                            .textFieldStyle(.roundedBorder)
+                        
+                        if let portError = viewModel.portError {
+                            Text(portError)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Vollständige URL")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        HStack {
+                            Text(viewModel.fullURL)
+                                .font(.callout.bold())
+                                .foregroundColor(viewModel.isValid ? .primary : .secondary)
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            
+                            Spacer()
+                            
+                            if viewModel.isValid {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
                             }
                         }
-                    TextField("Port eingeben", text: $portInput)
-                        .keyboardType(.numberPad)
-                        .autocapitalization(.none)
-                        .onChange(of: portInput) { _, newValue in
-                            if !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                               !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                ipAddress = input
-                                port = newValue
-                            }
+                    }
+                    .padding(.top, 8)
+                }
+                
+                Section {
+                    Button(role: .destructive) {
+                        showResetAlert = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                            Text("Einstellungen zurücksetzen")
                         }
-
-                    HStack {
-                        Text(fullURL)
-                            .font(.callout.bold())
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
                     }
                 }
             }
             .navigationTitle("Einstellungen")
-            .onAppear {
-                input = ipAddress
-                portInput = port
+            .alert("Einstellungen zurücksetzen?", isPresented: $showResetAlert) {
+                Button("Abbrechen", role: .cancel) {}
+                Button("Zurücksetzen", role: .destructive) {
+                    viewModel.resetToDefaults()
+                }
+            } message: {
+                Text("Möchten Sie wirklich alle Einstellungen auf die Standardwerte zurücksetzen?")
             }
         }
     }
 
     // MARK: - Private
 
-    @AppStorage("user_ip_address") private var ipAddress: String = ""
-    @AppStorage("user_ip_port") private var port: String = ""
-    @AppStorage("use_design_two") private var useDesignTwo: Bool = false
-    @State private var input: String = ""
-    @State private var portInput: String = ""
+    @State private var showResetAlert = false
 }

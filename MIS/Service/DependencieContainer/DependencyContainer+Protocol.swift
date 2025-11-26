@@ -8,4 +8,5 @@
 protocol DependencyContainerProtocol {
     func makeMediaItemViewModel() -> MediaItemViewModel
     func makeMediaItemAddOrEditViewModel(_ mediaItemViewModel: MediaItemViewModel) -> MediaItemAddOrEditViewModel
+    func makeSettingsViewModel() -> SettingsViewModel
 }
