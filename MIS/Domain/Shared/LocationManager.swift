@@ -29,34 +29,71 @@ import Observation
     static let shared = LocationManager()
 
     var authorizationStatus: CLAuthorizationStatus
-
+    private(set) var lastKnownLocation: CLLocationCoordinate2D?
+    private var lastLocationUpdate: Date?
+    
     // MARK: - Public Methods
 
     func requestAuthorization() {
         manager.requestWhenInUseAuthorization()
     }
-
-    func requestCurrentLocationAsync(timeout: TimeInterval = 10) async -> CLLocationCoordinate2D? {
-        // Prüfe Berechtigungen
+    
+    /// Startet kontinuierliche Standort-Updates im Hintergrund
+    func startMonitoringLocation() {
         guard authorizationStatus == .authorizedWhenInUse ||
             authorizationStatus == .authorizedAlways else {
-            print("⚠️ No location permission")
+            print("⚠️ Standortberechtigung nicht erteilt")
+            return
+        }
+        
+        print("📍 Starte kontinuierliche Standort-Überwachung")
+        manager.startUpdatingLocation()
+    }
+    
+    /// Stoppt kontinuierliche Standort-Updates
+    func stopMonitoringLocation() {
+        print("📍 Stoppe Standort-Überwachung")
+        manager.stopUpdatingLocation()
+    }
+    
+    /// Gibt den gecachten Standort zurück (sofort verfügbar!)
+    func getCachedLocation() -> CLLocationCoordinate2D? {
+        // Wenn der gecachte Standort weniger als 5 Minuten alt ist, verwende ihn
+        if let lastUpdate = lastLocationUpdate,
+           Date().timeIntervalSince(lastUpdate) < 300, // 5 Minuten
+           let cached = lastKnownLocation {
+            print("✅ Verwende gecachten Standort: \(cached.latitude), \(cached.longitude)")
+            return cached
+        }
+        return nil
+    }
+
+    func requestCurrentLocationAsync(timeout: TimeInterval = 10) async -> CLLocationCoordinate2D? {
+        guard authorizationStatus == .authorizedWhenInUse ||
+            authorizationStatus == .authorizedAlways else {
+            print("⚠️ Keine Standortberechtigung, verwende Default-Standort")
             return getDefaultLocation()
         }
 
-        // Wenn bereits ein Request läuft, warte kurz und gib Default zurück
+        // Wenn wir einen frischen gecachten Standort haben, verwende ihn sofort
+        if let cached = getCachedLocation() {
+            return cached
+        }
+
+        // Falls bereits eine Anfrage läuft, warte kurz und verwende dann Default
         if activeContinuation != nil {
-            print("⚠️ Location request already in progress")
+            print("⚠️ Standortanfrage läuft bereits, verwende gecachten oder Default-Standort")
             try? await Task.sleep(for: .milliseconds(100))
-            return getDefaultLocation()
+            return lastKnownLocation ?? getDefaultLocation()
         }
 
+        print("📍 Fordere aktuellen Standort an (Timeout: \(timeout)s)...")
         return await withCheckedContinuation { continuation in
             self.activeContinuation = continuation
 
             self.timeoutTask = Task { [weak self] in
                 try? await Task.sleep(for: .seconds(timeout))
-                self?.finishRequest(with: nil, reason: "Timeout")
+                await self?.finishRequest(with: nil, reason: "Timeout nach \(timeout)s")
             }
 
             self.manager.requestLocation()
@@ -72,25 +109,14 @@ import Observation
     // MARK: - Private Methods
 
     private func finishRequest(with coordinate: CLLocationCoordinate2D?, reason: String) {
-        // Hole und lösche Continuation atomar
         guard let continuation = activeContinuation else {
             return
         }
 
         activeContinuation = nil
-
-        // Cancel Timeout
         timeoutTask?.cancel()
         timeoutTask = nil
 
-        // Log
-        if let coordinate {
-            print("✅ Location: \(coordinate.latitude), \(coordinate.longitude)")
-        } else {
-            print("⚠️ Failed: \(reason) - using default")
-        }
-
-        // Resume mit Fallback
         continuation.resume(returning: coordinate ?? getDefaultLocation())
     }
 
@@ -114,6 +140,11 @@ extension LocationManager: CLLocationManagerDelegate {
                 finishRequest(with: nil, reason: "Invalid location")
                 return
             }
+
+            // Cache den Standort für spätere Verwendung
+            lastKnownLocation = location.coordinate
+            lastLocationUpdate = Date()
+            print("📍 Standort aktualisiert: \(location.coordinate.latitude), \(location.coordinate.longitude) (Genauigkeit: \(location.horizontalAccuracy)m)")
 
             finishRequest(with: location.coordinate, reason: "Success")
         }

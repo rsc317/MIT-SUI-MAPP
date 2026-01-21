@@ -36,7 +36,7 @@ struct RootView: View {
                 Label(MediaItemLK.NAV_TITLE.localized, systemImage: "list.bullet.rectangle")
             }
             .environment(\.mediaItemCoordinator, coordinator.mediaItemCoordinator)
-            
+
             NavigationStack(path: $coordinator.mapCoordinator.path) {
                 coordinator.mapCoordinator.build(route: .map)
                     .navigationDestination(for: MapRoute.self) { route in
@@ -50,7 +50,7 @@ struct RootView: View {
                 Label("Karte", systemImage: "map")
             }
             .environment(\.mapCoordinator, coordinator.mapCoordinator)
-            
+
             NavigationStack(path: $coordinator.settingsCoordinator.path) {
                 coordinator.settingsCoordinator.build(route: .main)
                     .navigationDestination(for: SettingsRoute.self) { route in

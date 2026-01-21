@@ -129,7 +129,12 @@ struct MediaItemAddOrEditView: View {
                             Task {
                                 if viewModel.isEditMode {
                                     await viewModel.updateItem()
-                                    coordinator.dismissSheet()
+                                    
+                                    if let error = viewModel.error {
+                                        viewModel.mediaItemViewModel.error = error
+                                    } else {
+                                        coordinator.dismissSheet()
+                                    }
                                 } else {
                                     validateView()
                                     showSaveOptions = titleError == nil && imageError == nil
@@ -159,6 +164,31 @@ struct MediaItemAddOrEditView: View {
                     saveAction(false)
                 }
                 Button("Abbrechen", role: .cancel) {}
+            } 
+            .alert("Fehler beim Speichern", isPresented: .init(
+                get: { viewModel.error != nil },
+                set: { if !$0 { viewModel.error = nil } }
+            )) {
+                Button("Abbrechen", role: .cancel) {
+                    viewModel.error = nil
+                    coordinator.dismissSheet()
+                }
+                
+                Button("Erneut versuchen") {
+                    viewModel.error = nil
+                    showSaveOptions = true
+                }
+            } message: {
+                if let error = viewModel.error {
+                    switch error {
+                    case .repositoryFailure(let details):
+                        Text("Es gab ein Problem beim Speichern: \(details)")
+                    case .itemNotFound:
+                        Text(error.localizedDescription)
+                    case .unknown:
+                        Text("Ein unbekannter Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.")
+                    }
+                }
             }
         }
     }
@@ -168,12 +198,23 @@ struct MediaItemAddOrEditView: View {
     @FocusState private var focusedField: Field?
 
     private func saveAction(_ local: Bool = true) {
-        Task {
+        Task { @MainActor in
+            print("💾 saveAction gestartet, lokal: \(local)")
             validateView()
-            guard titleError == nil, imageError == nil else { return }
+            guard titleError == nil, imageError == nil else {
+                print("❌ Validierung fehlgeschlagen: titleError=\(titleError ?? "nil"), imageError=\(imageError ?? "nil")")
+                return
+            }
 
             await viewModel.saveItem(local)
-            coordinator.dismissSheet()
+            
+            if let error = viewModel.error {
+                print("❌ Fehler beim Speichern: \(error)")
+                viewModel.mediaItemViewModel.error = error
+            } else {
+                print("✅ Speichern erfolgreich, schließe Sheet...")
+                coordinator.dismissSheet()
+            }
         }
     }
 
@@ -191,7 +232,7 @@ struct MediaItemAddOrEditView: View {
         titleError = nil
         imageError = nil
 
-        if viewModel.emptyTitle{
+        if viewModel.emptyTitle {
             titleError = "Titel darf nicht leer sein."
         }
 

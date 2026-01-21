@@ -30,6 +30,13 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
     @MainActor
     func save(shouldSaveLocal: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItem {
         let model = MediaItem(title: title, desc: desc, file: file)
+        
+        // Prüfe ob bereits ein Item mit gleicher UUID existiert (sollte nicht passieren, aber Sicherheit)
+        if let existing = try? fetch(byUUID: model.uuid) {
+            print("⚠️ Item mit UUID \(model.uuid) existiert bereits!")
+            return existing
+        }
+        
         if shouldSaveLocal {
             let fileURL = documentsURL.appending(path: model.file.file, directoryHint: .notDirectory)
             try data.write(to: fileURL)
@@ -41,6 +48,8 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
 
         context.insert(model)
         try context.save()
+        
+        print("✅ Neues MediaItem gespeichert: \(model.uuid)")
         return model
     }
 
@@ -66,9 +75,16 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
             throw MediaItemError.repositoryFailure("Could not delete MediaItem with ID: \(id)")
         }
 
+        // Lösche das Bild aus dem Cache
+        let cacheKey = model.file.cacheKey
+        ImageMemoryCache.shared.remove(for: cacheKey)
+        print("🗑️ Bild aus Cache gelöscht: \(cacheKey)")
+
         model.file.location == .local ? try await deleteImageLocal(fileName: model.file.file) : try await deleteImageExtern(dbID: model.file.dbID)
         context.delete(model)
         try context.save()
+        
+        print("✅ MediaItem gelöscht: \(id)")
     }
 
     func getImage(_ id: UUID) async throws -> Data? {

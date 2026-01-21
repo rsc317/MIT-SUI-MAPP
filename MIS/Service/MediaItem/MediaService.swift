@@ -76,8 +76,8 @@ class MediaService: MediaServiceProtocol {
     // MARK: - Private
 
     private var baseURL: URL {
-        let ip = UserDefaults.standard.string(forKey: "user_ip_address") ?? "127.0.0.1"
-        let port = UserDefaults.standard.string(forKey: "user_ip_port") ?? "8000"
+        let ip = UserDefaults.standard.string(forKey: UserDefaultKeys.ipAddress) ?? "127.0.0.1"
+        let port = UserDefaults.standard.string(forKey: UserDefaultKeys.port) ?? "8000"
         let urlString = "http://\(ip):\(port)"
         return URL(string: urlString) ?? URL(string: "http://127.0.0.1:8000")!
     }

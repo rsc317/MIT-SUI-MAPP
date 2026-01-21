@@ -10,7 +10,7 @@ import Foundation
 import Observation
 import SwiftUI
 
-@MainActor
+//@MainActor
 @Observable final class SettingsViewModel {
     // MARK: - Lifecycle
 
