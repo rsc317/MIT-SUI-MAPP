@@ -4,6 +4,7 @@
 //
 //  Created by Emircan Duman on 16.10.25.
 
+import Photos
 import PhotosUI
 import SwiftUI
 
@@ -129,7 +130,7 @@ struct MediaItemAddOrEditView: View {
                             Task {
                                 if viewModel.isEditMode {
                                     await viewModel.updateItem()
-                                    
+
                                     if let error = viewModel.error {
                                         viewModel.mediaItemViewModel.error = error
                                     } else {
@@ -164,7 +165,7 @@ struct MediaItemAddOrEditView: View {
                     saveAction(false)
                 }
                 Button("Abbrechen", role: .cancel) {}
-            } 
+            }
             .alert("Fehler beim Speichern", isPresented: .init(
                 get: { viewModel.error != nil },
                 set: { if !$0 { viewModel.error = nil } }
@@ -173,7 +174,7 @@ struct MediaItemAddOrEditView: View {
                     viewModel.error = nil
                     coordinator.dismissSheet()
                 }
-                
+
                 Button("Erneut versuchen") {
                     viewModel.error = nil
                     showSaveOptions = true
@@ -181,7 +182,7 @@ struct MediaItemAddOrEditView: View {
             } message: {
                 if let error = viewModel.error {
                     switch error {
-                    case .repositoryFailure(let details):
+                    case let .repositoryFailure(details):
                         Text("Es gab ein Problem beim Speichern: \(details)")
                     case .itemNotFound:
                         Text(error.localizedDescription)
@@ -199,20 +200,16 @@ struct MediaItemAddOrEditView: View {
 
     private func saveAction(_ local: Bool = true) {
         Task { @MainActor in
-            print("💾 saveAction gestartet, lokal: \(local)")
             validateView()
             guard titleError == nil, imageError == nil else {
-                print("❌ Validierung fehlgeschlagen: titleError=\(titleError ?? "nil"), imageError=\(imageError ?? "nil")")
                 return
             }
 
             await viewModel.saveItem(local)
-            
+
             if let error = viewModel.error {
-                print("❌ Fehler beim Speichern: \(error)")
                 viewModel.mediaItemViewModel.error = error
             } else {
-                print("✅ Speichern erfolgreich, schließe Sheet...")
                 coordinator.dismissSheet()
             }
         }
@@ -220,12 +217,28 @@ struct MediaItemAddOrEditView: View {
 
     private func prepareMediaItem(_ item: PhotosPickerItem?) {
         Task {
-            guard let data = try? await item?.loadTransferable(type: Data.self) else { return }
+            guard let item,
+                  let data = try? await item.loadTransferable(type: Data.self) else { return }
 
-            let mime = item?.supportedContentTypes.first?.preferredMIMEType ?? "application/octet-stream"
+            let mime = item.supportedContentTypes.first?.preferredMIMEType ?? "application/octet-stream"
             let ext = MimeType.getExtension(for: mime)
-            viewModel.prepareMediaItem(data, ext)
+
+            var originalFilename: String?
+
+            if let itemIdentifier = item.itemIdentifier {
+                originalFilename = await fetchOriginalFilename(for: itemIdentifier)
+            }
+
+            viewModel.prepareMediaItem(data, ext, originalFilename)
         }
+    }
+
+    private func fetchOriginalFilename(for identifier: String) async -> String? {
+        let results = PHAsset.fetchAssets(withLocalIdentifiers: [identifier], options: nil)
+        guard let asset = results.firstObject else { return nil }
+
+        let resources = PHAssetResource.assetResources(for: asset)
+        return resources.first?.originalFilename
     }
 
     private func validateView() {

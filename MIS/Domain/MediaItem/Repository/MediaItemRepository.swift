@@ -29,27 +29,31 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
     
     @MainActor
     func save(shouldSaveLocal: Bool, data: Data, title: String, desc: String, file: String) async throws -> MediaItem {
-        let model = MediaItem(title: title, desc: desc, file: file)
+        guard let converted = ImageConverter.convertToJPGWithFilename(data: data, filename: file, compressionQuality: 0.85) else {
+            throw MediaItemError.repositoryFailure("Bild konnte nicht in JPG konvertiert werden")
+        }
         
-        // Prüfe ob bereits ein Item mit gleicher UUID existiert (sollte nicht passieren, aber Sicherheit)
+        let jpgData = converted.data
+        let jpgFilename = converted.filename
+        
+        let model = MediaItem(title: title, desc: desc, file: jpgFilename)
+        
         if let existing = try? fetch(byUUID: model.uuid) {
-            print("⚠️ Item mit UUID \(model.uuid) existiert bereits!")
             return existing
         }
         
         if shouldSaveLocal {
             let fileURL = documentsURL.appending(path: model.file.file, directoryHint: .notDirectory)
-            try data.write(to: fileURL)
+            try jpgData.write(to: fileURL)
         } else {
-            let dbID = try await service.uploadMedia(data: data, fileURL: model.file.url)
+            let dbID = try await service.uploadMedia(data: jpgData, fileURL: model.file.url)
             model.file.dbID = String(dbID)
         }
-        ImageMemoryCache.shared.set(data, for: model.file.cacheKey)
+        ImageMemoryCache.shared.set(jpgData, for: model.file.cacheKey)
 
         context.insert(model)
         try context.save()
-        
-        print("✅ Neues MediaItem gespeichert: \(model.uuid)")
+
         return model
     }
 
@@ -61,10 +65,14 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
         model.title = title
         model.desc = desc
 
+        guard let jpgData = ImageConverter.convertToJPG(data: data, compressionQuality: 0.85) else {
+            throw MediaItemError.repositoryFailure("Bild konnte nicht in JPG konvertiert werden")
+        }
+
         if model.file.isLocalStorage {
-            try updateImageLocal(data: data, file: model.file.file)
+            try updateImageLocal(data: jpgData, file: model.file.file)
         } else if let id = model.file.dbID {
-            try await updateImageExtern(data: data, dbID: id, fileURL: model.file.url)
+            try await updateImageExtern(data: jpgData, dbID: id, fileURL: model.file.url)
         }
 
         try context.save()
@@ -75,16 +83,13 @@ final class MediaItemRepository: MediaItemRepositoryProtocol {
             throw MediaItemError.repositoryFailure("Could not delete MediaItem with ID: \(id)")
         }
 
-        // Lösche das Bild aus dem Cache
         let cacheKey = model.file.cacheKey
         ImageMemoryCache.shared.remove(for: cacheKey)
-        print("🗑️ Bild aus Cache gelöscht: \(cacheKey)")
 
         model.file.location == .local ? try await deleteImageLocal(fileName: model.file.file) : try await deleteImageExtern(dbID: model.file.dbID)
         context.delete(model)
         try context.save()
-        
-        print("✅ MediaItem gelöscht: \(id)")
+
     }
 
     func getImage(_ id: UUID) async throws -> Data? {

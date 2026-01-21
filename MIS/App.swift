@@ -6,26 +6,42 @@
 //
 
 import CoreLocation
+import Photos
 import SwiftData
 import SwiftUI
 
 @main struct MISApp: App {
+    // MARK: - Internal
+
     var body: some Scene {
         WindowGroup {
             RootView()
                 .task {
-                    // Fordere Standortberechtigung an wenn nötig
                     if LocationManager.shared.authorizationStatus == .notDetermined {
                         LocationManager.shared.requestAuthorization()
                     }
 
-                    // Starte proaktives Standort-Monitoring im Hintergrund
                     if LocationManager.shared.authorizationStatus == .authorizedWhenInUse ||
                         LocationManager.shared.authorizationStatus == .authorizedAlways {
                         LocationManager.shared.startMonitoringLocation()
-                        print("✅ Standort-Monitoring gestartet beim App-Start")
                     }
+
+                    await requestPhotoLibraryAccess()
                 }
         }
+    }
+
+    // MARK: - Private
+
+    // MARK: - Private Methods
+
+    private func requestPhotoLibraryAccess() async {
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+
+        guard status == .notDetermined else {
+            return
+        }
+
+        await PHPhotoLibrary.requestAuthorization(for: .readWrite)
     }
 }

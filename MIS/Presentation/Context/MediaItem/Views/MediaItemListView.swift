@@ -146,7 +146,6 @@ struct MediaItemListView: View {
 
         var body: some View {
             HStack(spacing: 12) {
-                // Bild links
                 ZStack {
                     if isLoading {
                         Rectangle()
@@ -167,7 +166,6 @@ struct MediaItemListView: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                 
-                // Informationen rechts
                 VStack(alignment: .leading, spacing: 6) {
                     Text(item.title)
                         .font(.headline)

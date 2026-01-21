@@ -10,7 +10,7 @@ import Foundation
 import Observation
 import SwiftUI
 
-//@MainActor
+/// @MainActor
 @Observable final class SettingsViewModel {
     // MARK: - Lifecycle
 
@@ -56,33 +56,13 @@ import SwiftUI
     var isValid: Bool {
         let ipTrimmed = ipAddressInput.trimmingCharacters(in: .whitespacesAndNewlines)
         let portTrimmed = portInput.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Felder müssen ausgefüllt sein UND keine Fehler haben
-        return !ipTrimmed.isEmpty 
-            && !portTrimmed.isEmpty 
-            && ipAddressError == nil 
+
+        return !ipTrimmed.isEmpty
+            && !portTrimmed.isEmpty
+            && ipAddressError == nil
             && portError == nil
             && isValidIPFormat(ipTrimmed)
             && isValidPortFormat(portTrimmed)
-    }
-    
-    private func isValidIPFormat(_ ip: String) -> Bool {
-        let components = ip.split(separator: ".")
-        guard components.count == 4 else { return false }
-        
-        for component in components {
-            guard let num = Int(component), num >= 0, num <= 255 else {
-                return false
-            }
-        }
-        return true
-    }
-    
-    private func isValidPortFormat(_ port: String) -> Bool {
-        guard let portNum = Int(port), portNum > 0, portNum <= 65535 else {
-            return false
-        }
-        return true
     }
 
     func loadSettings() {
@@ -157,6 +137,26 @@ import SwiftUI
     // MARK: - Private
 
     private let repository: SettingsRepositoryProtocol
+
+    private func isValidIPFormat(_ ip: String) -> Bool {
+        let components = ip.split(separator: ".")
+        guard components.count == 4 else { return false }
+
+        for component in components {
+            guard let num = Int(component), num >= 0, num <= 255 else {
+                return false
+            }
+        }
+        return true
+    }
+
+    private func isValidPortFormat(_ port: String) -> Bool {
+        guard let portNum = Int(port), portNum > 0, portNum <= 65535 else {
+            return false
+        }
+
+        return true
+    }
 
     private func validateAndSaveIfNeeded() {
         let ipTrimmed = ipAddressInput.trimmingCharacters(in: .whitespacesAndNewlines)

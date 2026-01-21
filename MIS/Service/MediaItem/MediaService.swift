@@ -6,8 +6,13 @@ class MediaService: MediaServiceProtocol {
     static let shared = MediaService()
 
     func uploadMedia(data: Data, fileURL: URL) async throws -> Int {
-        let filename = fileURL.lastPathComponent
-        let mimetype = MimeType.from(url: fileURL).rawValue
+        var filename = fileURL.lastPathComponent
+
+        if fileURL.pathExtension.isEmpty {
+            filename = "\(filename).jpg"
+        }
+
+        let mimetype = "image/jpeg"
 
         var request = URLRequest(url: baseURL.appendingPathComponent("/upload"))
         request.httpMethod = "POST"
@@ -39,8 +44,13 @@ class MediaService: MediaServiceProtocol {
     }
 
     func updateMedia(mediaID: Int, fileData: Data, fileURL: URL) async throws {
-        let filename = fileURL.lastPathComponent
-        let mimetype = MimeType.from(url: fileURL).rawValue
+        var filename = fileURL.lastPathComponent
+
+        if fileURL.pathExtension.isEmpty {
+            filename = "\(filename).jpg"
+        }
+
+        let mimetype = "image/jpeg"
 
         var request = URLRequest(url: baseURL.appendingPathComponent("/media/\(mediaID)"))
         request.httpMethod = "PUT"

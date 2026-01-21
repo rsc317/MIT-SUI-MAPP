@@ -14,12 +14,12 @@ extension EnvironmentValues {
         get { self[MediaItemCoordinatorKey.self] }
         set { self[MediaItemCoordinatorKey.self] = newValue }
     }
-    
+
     var mapCoordinator: MapCoordinator {
         get { self[MapCoordinatorKey.self] }
         set { self[MapCoordinatorKey.self] = newValue }
     }
-    
+
     var settingsCoordinator: SettingsCoordinator {
         get { self[SettingsCoordinatorKey.self] }
         set { self[SettingsCoordinatorKey.self] = newValue }

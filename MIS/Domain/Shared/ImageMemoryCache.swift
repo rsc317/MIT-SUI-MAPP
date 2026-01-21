@@ -7,8 +7,7 @@
 
 import Foundation
 
-@MainActor
-final class ImageMemoryCache {
+@MainActor final class ImageMemoryCache {
     // MARK: - Internal
 
     static let shared = ImageMemoryCache()
@@ -24,7 +23,7 @@ final class ImageMemoryCache {
         cache[id] = data
         accessOrder[id] = Date()
         currentSize += data.count
-        
+
         if currentSize > maxSizeInBytes {
             evictLeastRecentlyUsed()
         }
@@ -49,17 +48,17 @@ final class ImageMemoryCache {
     private var cache = [String: Data]()
     private var accessOrder = [String: Date]()
     private var currentSize: Int = 0
-    
+
     private let maxSizeInBytes: Int = 30 * 1024 * 1024
-    
+
     private func evictLeastRecentlyUsed() {
-        let sortedKeys = accessOrder.sorted { $0.value < $1.value }.map { $0.key }
-        
+        let sortedKeys = accessOrder.sorted { $0.value < $1.value }.map(\.key)
+
         let targetSize = Int(Double(maxSizeInBytes) * 0.8)
-        
+
         for key in sortedKeys {
             guard currentSize > targetSize else { break }
-            
+
             if let data = cache[key] {
                 currentSize -= data.count
                 cache.removeValue(forKey: key)

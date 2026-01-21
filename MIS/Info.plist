@@ -2,17 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-        <key>NSAllowsLocalNetworking</key>
-        <true/>
-    </dict>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Wir benötigen deinen Standort, um Medien auf der Karte anzuzeigen und GPS-Daten zu erfassen.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Wir benötigen deinen Standort, um Medien auf der Karte anzuzeigen.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Wir benötigen Zugriff auf deine Fotogalerie, um Bilder auszuwählen und deren Metadaten (Name, GPS-Koordinaten) zu lesen.</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Wir benötigen deinen Standort, um Medien auf der Karte anzuzeigen und GPS-Daten zu erfassen.</string>
-    
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Wir benötigen deinen Standort, um Medien auf der Karte anzuzeigen.</string>
+    <string>Wir verwenden deinen Standort, um GPS-Koordinaten zu deinen Medien hinzuzufügen, falls das Bild selbst keine GPS-Daten enthält.</string>
 </dict>
 </plist>

@@ -121,9 +121,7 @@ struct MediaItemDetailCoverView: View {
                                 }
                         }
 
-                        // Info Card
                         VStack(alignment: .leading, spacing: 20) {
-                            // Datum
                             HStack(alignment: .center, spacing: 12) {
                                 Image(systemName: "calendar")
                                     .font(.system(size: 20))
@@ -164,7 +162,6 @@ struct MediaItemDetailCoverView: View {
                                 Spacer()
                             }
 
-                            // Speicherort
                             HStack(alignment: .center, spacing: 12) {
                                 Image(systemName: viewModel.currentItem?.mediaFile.location == .local ? "internaldrive.fill" : "cloud.fill")
                                     .font(.system(size: 20))
