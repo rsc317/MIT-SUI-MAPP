@@ -91,7 +91,6 @@ struct MediaItemAddOrEditView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                             ColoredSegmentedPicker(selection: $filter, showAllOption: false)
-                                .padding(.horizontal)
                         }
                         .padding(.top, 8)
                     }

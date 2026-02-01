@@ -14,50 +14,38 @@ import SwiftData
 @Observable final class MediaItemViewModel {
     // MARK: - Lifecycle
 
-    init(_ repository: MediaItemRepositoryProtocol) {
+    init(_ repository: MediaItemRepositoryProtocol, sharedDataStore: SharedMediaDataStore) {
         self.repository = repository
+        self.sharedDataStore = sharedDataStore
     }
 
     // MARK: - Internal
 
-    var items = [MediaItemDTO]()
     var error: MediaItemError?
     var selectedItemID: UUID?
     var currentItem: MediaItemDTO?
     var selectedImageData: Data?
-    var isLoading: Bool = false
+    
+    // Zugriff auf die gemeinsamen Daten
+    var items: [MediaItemDTO] {
+        sharedDataStore.items
+    }
+    
+    var isLoading: Bool {
+        sharedDataStore.isLoading
+    }
 
     var currentItemTitle: String {
         currentItem?.title ?? ""
     }
 
     func loadItems() async {
-        do {
-            isLoading = true
-            let models = try await repository.fetchAll()
-            var loadedItems = [MediaItemDTO]()
-
-            for model in models {
-                if let fileData = try await repository.getImage(model.uuid),
-                   let fileGPSCoordinate = await extractGPSMetadataOrCurrentLocation(from: fileData) {
-                    let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
-                    loadedItems.append(item)
-                }
-            }
-
-            items = loadedItems
-            isLoading = false
-        } catch {
-            self.error = .repositoryFailure(error.localizedDescription)
-            isLoading = false
-        }
+        await sharedDataStore.loadItems()
     }
 
     func deleteItem(_ item: MediaItemDTO) async {
         do {
-            try await repository.delete(byUUID: item.id)
-            items.removeAll { $0.id == item.id }
-
+            try await sharedDataStore.deleteItem(item)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
@@ -73,22 +61,12 @@ import SwiftData
     }
 
     func getImageData(for item: MediaItemDTO) async -> Data? {
-        do {
-            return try await repository.getImage(item.id)
-        } catch {
-            self.error = .repositoryFailure(error.localizedDescription)
-            return nil
-        }
+        await sharedDataStore.getImageData(for: item)
     }
 
     func getImageData() async throws -> Data? {
-        do {
-            guard let id = currentItem?.id else { return nil }
-
-            return try await repository.getImage(id)
-        } catch {
-            return nil
-        }
+        guard let item = currentItem else { return nil }
+        return await sharedDataStore.getImageData(for: item)
     }
 
     func extractGPSMetadataOrCurrentLocation(from imageData: Data) async -> CLLocationCoordinate2D? {
@@ -129,8 +107,17 @@ import SwiftData
         selectedImageData = nil
         error = nil
     }
+    
+    func addItem(_ item: MediaItemDTO) {
+        sharedDataStore.addItem(item)
+    }
+    
+    func updateItem(_ item: MediaItemDTO) {
+        sharedDataStore.updateItem(item)
+    }
 
     // MARK: - Private
 
     private let repository: MediaItemRepositoryProtocol
+    private let sharedDataStore: SharedMediaDataStore
 }

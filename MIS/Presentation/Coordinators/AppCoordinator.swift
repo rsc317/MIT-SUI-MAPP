@@ -17,15 +17,17 @@ import SwiftUI
     init(container: DependencyContainerProtocol? = nil) {
         let resolvedContainer = container ?? DependencyContainer()
         self.container = resolvedContainer
-        let sharedMediaViewModel = resolvedContainer.makeMediaItemViewModel()
+        
+        let listMediaViewModel = resolvedContainer.makeMediaItemViewModel()
+        let mapMediaViewModel = resolvedContainer.makeMediaItemViewModel()
         
         mediaItemCoordinator = MediaItemCoordinator(
             container: resolvedContainer,
-            mediaViewModel: sharedMediaViewModel
+            mediaViewModel: listMediaViewModel
         )
         mapCoordinator = MapCoordinator(
             container: resolvedContainer,
-            mediaViewModel: sharedMediaViewModel
+            mediaViewModel: mapMediaViewModel
         )
         settingsCoordinator = SettingsCoordinator(container: resolvedContainer)
     }
