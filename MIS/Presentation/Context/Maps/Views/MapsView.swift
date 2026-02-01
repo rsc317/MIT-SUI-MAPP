@@ -29,7 +29,7 @@ struct MapsView: View {
                                 .frame(width: 32, height: 32)
                                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
 
-                            Image(systemName: item.mediaFile.location == .local ? "internaldrive.fill" : "cloud.fill")
+                            Image(systemName: item.mediaFile.location == .local ? "internaldrive" : "cloud")
                                 .foregroundStyle(.white)
                                 .font(.system(size: 14, weight: .semibold))
                         }
@@ -37,11 +37,12 @@ struct MapsView: View {
                         if viewModel.selectedItemID == item.id {
                             Text(item.title)
                                 .font(.caption.weight(.semibold))
+                                .foregroundStyle(.primary)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 4)
                                 .background {
                                     RoundedRectangle(cornerRadius: 8)
-                                        .fill(Color.white)
+                                        .fill(.regularMaterial)
                                         .shadow(color: .black.opacity(0.2), radius: 4, y: 2)
                                 }
                                 .transition(.scale.combined(with: .opacity))

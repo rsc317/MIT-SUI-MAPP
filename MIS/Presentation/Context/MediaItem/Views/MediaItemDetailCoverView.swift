@@ -163,7 +163,7 @@ struct MediaItemDetailCoverView: View {
                             }
 
                             HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: viewModel.currentItem?.mediaFile.location == .local ? "internaldrive.fill" : "cloud.fill")
+                                Image(systemName: viewModel.currentItem?.mediaFile.location == .local ? "internaldrive" : "cloud")
                                     .font(.system(size: 20))
                                     .foregroundStyle(viewModel.currentItem?.mediaFile.location == .local ? .green : .blue)
                                     .frame(width: 28, alignment: .center)
@@ -172,7 +172,7 @@ struct MediaItemDetailCoverView: View {
                                     Text("Speicherort")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Text(viewModel.currentItem?.mediaFile.location == .local ? "Lokal gespeichert" : "Extern gespeichert")
+                                    Text(viewModel.currentItem?.mediaFile.location == .local ? "Lokal gespeichert" : "Server gespeichert")
                                         .font(.body)
                                         .foregroundStyle(.text)
                                 }

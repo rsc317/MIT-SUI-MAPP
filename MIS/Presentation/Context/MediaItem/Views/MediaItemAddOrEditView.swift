@@ -20,8 +20,8 @@ struct MediaItemAddOrEditView: View {
     @State private var selectedItem: PhotosPickerItem? = nil
     @State private var titleError: String? = nil
     @State private var imageError: String? = nil
-    @State private var showSaveOptions = false
     @State private var showDeleteItemAlert = false
+    @State private var filter = ColoredSegmentedPicker.FilterType.local
 
     var body: some View {
         let imageData = viewModel.mediaItemViewModel.selectedImageData
@@ -84,6 +84,17 @@ struct MediaItemAddOrEditView: View {
                             .font(.caption)
                             .foregroundColor(.error)
                     }
+                    
+                    if !viewModel.isEditMode {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Speicherort")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            ColoredSegmentedPicker(selection: $filter, showAllOption: false)
+                                .padding(.horizontal)
+                        }
+                        .padding(.top, 8)
+                    }
                 }
                 .padding()
                 .cornerRadius(12)
@@ -138,7 +149,9 @@ struct MediaItemAddOrEditView: View {
                                     }
                                 } else {
                                     validateView()
-                                    showSaveOptions = titleError == nil && imageError == nil
+                                    if titleError == nil && imageError == nil {
+                                        await saveAction()
+                                    }
                                 }
                             }
                         },
@@ -157,15 +170,6 @@ struct MediaItemAddOrEditView: View {
                     titleError = nil
                 }
             }
-            .confirmationDialog("Wie möchtest du speichern?", isPresented: $showSaveOptions, titleVisibility: .visible) {
-                Button("Lokal speichern") {
-                    saveAction()
-                }
-                Button("Auf Server speichern") {
-                    saveAction(false)
-                }
-                Button("Abbrechen", role: .cancel) {}
-            }
             .alert("Fehler beim Speichern", isPresented: .init(
                 get: { viewModel.error != nil },
                 set: { if !$0 { viewModel.error = nil } }
@@ -177,7 +181,9 @@ struct MediaItemAddOrEditView: View {
 
                 Button("Erneut versuchen") {
                     viewModel.error = nil
-                    showSaveOptions = true
+                    Task {
+                        await saveAction()
+                    }
                 }
             } message: {
                 if let error = viewModel.error {
@@ -198,20 +204,19 @@ struct MediaItemAddOrEditView: View {
 
     @FocusState private var focusedField: Field?
 
-    private func saveAction(_ local: Bool = true) {
-        Task { @MainActor in
-            validateView()
-            guard titleError == nil, imageError == nil else {
-                return
-            }
+    private func saveAction() async {
+        validateView()
+        guard titleError == nil, imageError == nil else {
+            return
+        }
 
-            await viewModel.saveItem(local)
+        let shouldSaveLocal = filter == .local
+        await viewModel.saveItem(shouldSaveLocal)
 
-            if let error = viewModel.error {
-                viewModel.mediaItemViewModel.error = error
-            } else {
-                coordinator.dismissSheet()
-            }
+        if let error = viewModel.error {
+            viewModel.mediaItemViewModel.error = error
+        } else {
+            coordinator.dismissSheet()
         }
     }
 

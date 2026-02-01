@@ -101,10 +101,11 @@ import SwiftData
            let lonRef = gpsDict[kCGImagePropertyGPSLongitudeRef] as? String {
             let lat = latRef == "S" ? -latitude : latitude
             let lon = lonRef == "W" ? -longitude : longitude
-
-            return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            
+            let coordinate = CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            return coordinate
         }
-
+        
         if let cached = LocationManager.shared.getCachedLocation() {
             return cached
         }

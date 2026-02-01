@@ -76,15 +76,8 @@ struct MediaItemListView: View {
                 }
             }
             HStack {
-                Picker("Filter", selection: $filter) {
-                    Text("Alle").tag(FilterType.all)
-                    Image(systemName: "internaldrive")
-                        .tag(FilterType.local)
-                    Image(systemName: "cloud")
-                        .tag(FilterType.remote)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
+                ColoredSegmentedPicker(selection: $filter)
+                    .padding(.horizontal)
             }
             .padding(.bottom, 12)
         }
@@ -132,11 +125,7 @@ struct MediaItemListView: View {
     // MARK: - Private
 
     @State private var showingOptions = false
-    @State private var filter = FilterType.all
-
-    private enum FilterType {
-        case all, local, remote
-    }
+    @State private var filter = ColoredSegmentedPicker.FilterType.all
 
     private struct CompactItemRowView: View {
         // MARK: - Internal
@@ -182,9 +171,9 @@ struct MediaItemListView: View {
                     }
                     
                     HStack(spacing: 6) {
-                        Image(systemName: item.mediaFile.location == .local ? "internaldrive.fill" : "cloud.fill")
+                        Image(systemName: item.mediaFile.location == .local ? "internaldrive" : "cloud")
                             .font(.system(size: 10, weight: .semibold))
-                        Text(item.mediaFile.location == .local ? "Lokal" : "Extern")
+                        Text(item.mediaFile.location == .local ? "Lokal" : "Server")
                             .font(.caption2.weight(.semibold))
                     }
                     .foregroundStyle(.white)
@@ -258,9 +247,9 @@ struct MediaItemListView: View {
                         HStack {
                             Spacer()
                             HStack(spacing: 6) {
-                                Image(systemName: item.mediaFile.location == .local ? "internaldrive.fill" : "cloud.fill")
+                                Image(systemName: item.mediaFile.location == .local ? "internaldrive" : "cloud")
                                     .font(.system(size: 14, weight: .semibold))
-                                Text(item.mediaFile.location == .local ? "Lokal" : "Extern")
+                                Text(item.mediaFile.location == .local ? "Lokal" : "Server")
                                     .font(.caption.weight(.semibold))
                             }
                             .foregroundStyle(.white)

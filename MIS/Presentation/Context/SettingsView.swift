@@ -29,44 +29,50 @@ struct SettingsView: View {
                 Section(header: Text("Server-Konfiguration")) {
                     VStack(alignment: .leading, spacing: 8) {
                         TextField("IP-Adresse eingeben", text: $viewModel.ipAddressInput)
-                            .keyboardType(.decimalPad)
+                            .keyboardType(.numbersAndPunctuation)
                             .autocapitalization(.none)
                             .textFieldStyle(.roundedBorder)
-                        
+                        Text("Format: xxx.xxx.xxx.xxx (z.B. 192.168.1.1)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
                         if let ipError = viewModel.ipAddressError {
                             Text(ipError)
                                 .font(.caption)
                                 .foregroundColor(.red)
                         }
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         TextField("Port eingeben", text: $viewModel.portInput)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.numbersAndPunctuation)
                             .autocapitalization(.none)
                             .textFieldStyle(.roundedBorder)
-                        
+                        Text("Port: 1-65535 (z.B. 8000)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+
                         if let portError = viewModel.portError {
                             Text(portError)
                                 .font(.caption)
                                 .foregroundColor(.red)
                         }
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Vollständige URL")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
+
                         HStack {
                             Text(viewModel.fullURL)
                                 .font(.callout.bold())
                                 .foregroundColor(viewModel.isValid ? .primary : .secondary)
                                 .lineLimit(1)
                                 .truncationMode(.middle)
-                            
+
                             Spacer()
-                            
+
                             if viewModel.isValid {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundColor(.green)
@@ -75,7 +81,7 @@ struct SettingsView: View {
                     }
                     .padding(.top, 8)
                 }
-                
+
                 Section {
                     Button(role: .destructive) {
                         showResetAlert = true
