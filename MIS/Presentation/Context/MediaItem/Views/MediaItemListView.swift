@@ -89,6 +89,7 @@ struct MediaItemListView: View {
         .navigationTitle(MediaItemLK.NAV_TITLE.localized)
         .toolbar {
             UIComponentFactory.createAddButton(action: {
+                viewModel.prepareForNewItem()
                 coordinator.presentSheet(.addOrEditNewItem)
             }, accessibilityId: MediaItemAID.BUTTON_ADD)
         }

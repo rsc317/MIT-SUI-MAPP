@@ -121,8 +121,13 @@ import SwiftData
 
     func onDisappearAction() {
         error = nil
+        selectedImageData = nil
+    }
+    
+    func prepareForNewItem() {
         currentItem = nil
         selectedImageData = nil
+        error = nil
     }
 
     // MARK: - Private
