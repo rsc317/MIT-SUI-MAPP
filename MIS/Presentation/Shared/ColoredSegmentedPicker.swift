@@ -48,7 +48,7 @@ struct ColoredSegmentedPicker: View {
         var items: [SegmentItem] = []
         
         if showAllOption {
-            items.append(SegmentItem(type: .all, title: "Alle", color: .gray.opacity(0.8)))
+            items.append(SegmentItem(type: .all, title: "Alle", color: .cyan.opacity(0.8)))
         }
         
         items.append(contentsOf: [

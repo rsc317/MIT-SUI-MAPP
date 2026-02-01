@@ -143,26 +143,6 @@ struct MediaItemDetailCoverView: View {
                             }
 
                             HStack(alignment: .center, spacing: 12) {
-                                Image(systemName: "globe")
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(.blue)
-                                    .frame(width: 28, alignment: .center)
-
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("GPS Koordinaten")
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    if let item = viewModel.currentItem {
-                                        Text(String(format: "%.6f, %.6f", item.latitude, item.longitude))
-                                            .font(.body)
-                                            .foregroundStyle(.text)
-                                    }
-                                }
-
-                                Spacer()
-                            }
-
-                            HStack(alignment: .center, spacing: 12) {
                                 Image(systemName: viewModel.currentItem?.mediaFile.location == .local ? "internaldrive" : "cloud")
                                     .font(.system(size: 20))
                                     .foregroundStyle(viewModel.currentItem?.mediaFile.location == .local ? .green : .blue)
@@ -172,12 +152,25 @@ struct MediaItemDetailCoverView: View {
                                     Text("Speicherort")
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
-                                    Text(viewModel.currentItem?.mediaFile.location == .local ? "Lokal gespeichert" : "Server gespeichert")
+                                    Text(viewModel.currentItem?.mediaFile.location == .local ? "Lokal" : "Server")
                                         .font(.body)
                                         .foregroundStyle(.text)
                                 }
 
                                 Spacer()
+                            }
+                            
+                            // Karte
+                            if let item = viewModel.currentItem {
+                                VStack(alignment: .leading, spacing: 12) {
+                                    DetailMapView(
+                                        coordinate: item.mediaFile.fileGPSCoordinate,
+                                        title: item.title,
+                                        location: item.mediaFile.location
+                                    )
+                                    .frame(height: 250)
+                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
                             }
 
                             if let desc = viewModel.currentItem?.desc, !desc.isEmpty {
