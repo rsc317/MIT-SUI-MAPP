@@ -10,10 +10,7 @@ import SwiftUI
 struct MediaItemListView: View {
     // MARK: - Internal
 
-    @Environment(\.mediaItemCoordinator) private var coordinator
     @State var viewModel: MediaItemViewModel
-    @State private var showDeleteItemAlert: Bool = false
-    @AppStorage("use_design_two") private var useDesignTwo: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,7 +30,7 @@ struct MediaItemListView: View {
                                     } label: {
                                         Label(GlobalLocalizationKeys.BUTTON_EDIT.localized, systemImage: "pencil")
                                     }
-                                    
+
                                     Button(role: .destructive) {
                                         viewModel.currentItem = item
                                         showDeleteItemAlert = true
@@ -54,7 +51,7 @@ struct MediaItemListView: View {
                                     } label: {
                                         Label(GlobalLocalizationKeys.BUTTON_EDIT.localized, systemImage: "pencil")
                                     }
-                                    
+
                                     Button(role: .destructive) {
                                         viewModel.currentItem = item
                                         showDeleteItemAlert = true
@@ -67,7 +64,18 @@ struct MediaItemListView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
-                .padding(.bottom, 12)
+                .padding(.bottom, 80)
+            }
+            .overlay(alignment: .bottom) {
+                VStack {
+                    ColoredSegmentedPicker(selection: $filter)
+                        .background {
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(.regularMaterial)
+                                .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+                        }
+                }
+                .padding()
             }
             .overlay {
                 if viewModel.isLoading {
@@ -75,11 +83,6 @@ struct MediaItemListView: View {
                         .scaleEffect(1.5)
                 }
             }
-            HStack {
-                ColoredSegmentedPicker(selection: $filter)
-                    .padding(.horizontal)
-            }
-            .padding(.bottom, 12)
         }
         .applyGlobalBackground()
         .modifier(NavigationBarTitleColorModifier(color: .accentColor))
@@ -114,18 +117,7 @@ struct MediaItemListView: View {
         )
     }
 
-    private var filteredItems: [MediaItemDTO] {
-        switch filter {
-        case .all: viewModel.items
-        case .local: viewModel.items.filter { $0.mediaFile.location == .local }
-        case .remote: viewModel.items.filter { $0.mediaFile.location == .remote }
-        }
-    }
-
     // MARK: - Private
-
-    @State private var showingOptions = false
-    @State private var filter = ColoredSegmentedPicker.FilterType.all
 
     private struct CompactItemRowView: View {
         // MARK: - Internal
@@ -154,13 +146,13 @@ struct MediaItemListView: View {
                     }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text(item.title)
                         .font(.headline)
                         .foregroundStyle(.text)
                         .lineLimit(2)
-                    
+
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
                             .foregroundStyle(.accent)
@@ -169,7 +161,7 @@ struct MediaItemListView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                    
+
                     HStack(spacing: 6) {
                         Image(systemName: item.mediaFile.location == .local ? "internaldrive" : "cloud")
                             .font(.system(size: 10, weight: .semibold))
@@ -184,9 +176,9 @@ struct MediaItemListView: View {
                             .fill(item.mediaFile.location == .local ? Color.green : Color.blue)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
@@ -205,8 +197,7 @@ struct MediaItemListView: View {
         @State private var image = Image(systemName: "photo")
         @State private var isLoading = true
 
-        @MainActor
-        private func loadImage() async {
+        @MainActor private func loadImage() async {
             isLoading = true
             defer { isLoading = false }
             if let data = await viewModel.getImageData(for: item),
@@ -242,7 +233,7 @@ struct MediaItemListView: View {
                             .frame(height: 200)
                             .clipped()
                     }
-                    
+
                     VStack {
                         HStack {
                             Spacer()
@@ -269,13 +260,13 @@ struct MediaItemListView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 .padding(.horizontal, 12)
                 .padding(.top, 12)
-                
+
                 VStack(alignment: .leading, spacing: 8) {
                     Text(item.title)
                         .font(.title3.weight(.semibold))
                         .foregroundStyle(.text)
                         .lineLimit(1)
-                    
+
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
                             .foregroundStyle(.accent)
@@ -284,7 +275,7 @@ struct MediaItemListView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
-                    
+
                     HStack(spacing: 4) {
                         Image(systemName: "globe")
                             .foregroundStyle(.accent)
@@ -313,14 +304,28 @@ struct MediaItemListView: View {
         @State private var image = Image(systemName: "photo")
         @State private var isLoading = true
 
-        @MainActor
-        private func loadImage() async {
+        @MainActor private func loadImage() async {
             isLoading = true
             defer { isLoading = false }
             if let data = await viewModel.getImageData(for: item),
                let uiImage = UIImage(data: data) {
                 image = Image(uiImage: uiImage)
             }
+        }
+    }
+
+    @Environment(\.mediaItemCoordinator) private var coordinator
+    @State private var showDeleteItemAlert: Bool = false
+    @State private var showingOptions = false
+    @State private var filter = ColoredSegmentedPicker.FilterType.all
+
+    @AppStorage("use_design_two") private var useDesignTwo: Bool = false
+
+    private var filteredItems: [MediaItemDTO] {
+        switch filter {
+        case .all: viewModel.items
+        case .local: viewModel.items.filter { $0.mediaFile.location == .local }
+        case .remote: viewModel.items.filter { $0.mediaFile.location == .remote }
         }
     }
 }

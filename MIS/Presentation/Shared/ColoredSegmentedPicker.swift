@@ -75,7 +75,6 @@ struct CustomSegmentedControl: UIViewRepresentable {
         var parent: CustomSegmentedControl
 
         @objc func valueChanged(_ sender: UISegmentedControl) {
-            // Konvertiere den Segment-Index zurück zum entsprechenden FilterType
             let selectedIndex = sender.selectedSegmentIndex
             if selectedIndex < parent.segments.count {
                 parent.selection = parent.segments[selectedIndex].type
@@ -92,7 +91,6 @@ struct CustomSegmentedControl: UIViewRepresentable {
 
         for (index, segment) in segments.enumerated() {
             if let icon = segment.icon, let title = segment.title {
-                // Kombiniertes Bild mit Icon und Text
                 let image = createCombinedImage(icon: icon, text: title, isSelected: false)
                 segmentedControl.insertSegment(with: image, at: index, animated: false)
             } else if let title = segment.title {
@@ -138,11 +136,9 @@ struct CustomSegmentedControl: UIViewRepresentable {
             let isSelected = index == selectedIndex
             
             if let icon = segment.icon, let title = segment.title {
-                // Kombiniertes Bild mit Icon und Text
                 let image = createCombinedImage(icon: icon, text: title, isSelected: isSelected)
                 segmentedControl.setImage(image, forSegmentAt: index)
             } else if let icon = segment.icon {
-                // Nur Icon
                 let image = UIImage(systemName: icon)?
                     .withTintColor(isSelected ? .white : .label, renderingMode: .alwaysOriginal)
                 segmentedControl.setImage(image, forSegmentAt: index)
@@ -170,7 +166,6 @@ struct CustomSegmentedControl: UIViewRepresentable {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: totalWidth, height: totalHeight))
         
         return renderer.image { context in
-            // Icon zeichnen
             if let iconImage = iconImage {
                 let iconY = (totalHeight - iconSize.height) / 2
                 iconImage
@@ -178,7 +173,6 @@ struct CustomSegmentedControl: UIViewRepresentable {
                     .draw(at: CGPoint(x: 0, y: iconY))
             }
             
-            // Text zeichnen
             let textY = (totalHeight - textSize.height) / 2
             (text as NSString).draw(
                 at: CGPoint(x: iconSize.width + spacing, y: textY),
