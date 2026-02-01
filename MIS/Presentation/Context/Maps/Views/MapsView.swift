@@ -78,11 +78,29 @@ struct MapsView: View {
                 MapPitchToggle()
             }
             .ignoresSafeArea()
+            .overlay {
+                if viewModel.isLoading {
+                    ZStack {
+                        Color.black.opacity(0.2)
+                            .ignoresSafeArea()
+                        
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .padding()
+                            .background {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(.ultraThickMaterial)
+                                    .shadow(radius: 10)
+                            }
+                    }
+                }
+            }
             
+            // Button zum Anzeigen aller Pinpoints
             Button {
                 fitAllAnnotations()
             } label: {
-                Image(systemName: "square.arrowtriangle.4.outward")
+                Image(systemName: "scope")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 50, height: 50)
@@ -96,6 +114,9 @@ struct MapsView: View {
             .padding(.bottom, 16)
         }
         .task {
+            // Lade alle Items für die Map
+            await viewModel.loadItems()
+            
             if let userLocation = await LocationManager.shared.requestCurrentLocationAsync() {
                 position = .region(
                     MKCoordinateRegion(

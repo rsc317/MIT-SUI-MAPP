@@ -110,10 +110,7 @@ import MapKit
 
             if let fileGPSCoordinate = coordinate {
                 let item = MediaItemDTO(from: model, fileGPSCoordinate: fileGPSCoordinate)
-
-                if !mediaItemViewModel.items.contains(where: { $0.id == item.id }) {
-                    mediaItemViewModel.items.append(item)
-                }
+                mediaItemViewModel.addItem(item)
             }
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
@@ -130,9 +127,7 @@ import MapKit
                   let selectedImageData = mediaItemViewModel.selectedImageData else { return }
 
             try await repository.update(byUUID: currentItem.id, data: selectedImageData, title: title, desc: desc)
-            if let idx = mediaItemViewModel.items.firstIndex(where: { $0.id == currentItem.id }) {
-                mediaItemViewModel.items[idx] = currentItem
-            }
+            mediaItemViewModel.updateItem(currentItem)
         } catch {
             self.error = .repositoryFailure(error.localizedDescription)
         }
